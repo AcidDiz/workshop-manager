@@ -1,124 +1,124 @@
 # START - Workshop Manager
 
-Questa e' la guida principale per installare e avviare il progetto.
+Main guide to install and run the project.
 
-## Indice
+## Contents
 
-- [Stack tecnico](#stack-tecnico)
-- [Requisiti locali](#requisiti-locali)
-- [Installazione passo-passo](#installazione-passo-passo)
-- [Avvio in sviluppo](#avvio-in-sviluppo)
-- [Verifica qualità e test](#verifica-qualita-e-test)
-- [Troubleshooting rapido](#troubleshooting-rapido)
+- [Technical stack](#technical-stack)
+- [Local requirements](#local-requirements)
+- [Step-by-step installation](#step-by-step-installation)
+- [Running in development](#running-in-development)
+- [Quality checks and testing](#quality-checks-and-testing)
+- [Quick troubleshooting](#quick-troubleshooting)
 
-## Stack tecnico
+## Technical stack
 
 - Backend: Laravel 13
 - Auth backend: Laravel Fortify
 - Frontend bridge: Inertia.js v3
 - Frontend UI: Vue 3 + TypeScript
 - Styling: Tailwind CSS v4
-- Routing TS helper: Laravel Wayfinder
+- TypeScript routing helper: Laravel Wayfinder
 - Testing: Pest v4
 - Build tool: Vite
-- Queue default: database
-- Session driver default: database
-- Cache store default: database
+- Queue default: `database`
+- Session driver default: `database`
+- Cache store default: `database`
 - Mailer default: `log`
-- Ambiente opzionale e consigliato per onboarding cross-platform: Laravel Sail con MySQL e Redis
+- Recommended cross-platform environment: Laravel Sail with MySQL and Redis
 
-## Requisiti locali
+## Local requirements
 
-Per lavorare sul progetto in locale servono almeno:
+You need at least:
 
 - PHP 8.3+
 - Composer 2.x
-- Node.js 20+ con npm
-- MySQL (via Sail o installazione locale) per lo sviluppo applicativo
-- estensioni PHP tipiche di Laravel, inclusi PDO MySQL, **pdo_sqlite** (serve per `php artisan test` in locale se esegui i test fuori da Docker), mbstring, openssl e tokenizer
+- Node.js 20+ with npm
+- MySQL (via Sail or a local install) for application development
+- Typical Laravel PHP extensions, including PDO MySQL, **pdo_sqlite** (needed for `php artisan test` on the host if you run tests outside Docker), mbstring, openssl, and tokenizer
 
-Se vuoi usare Laravel Sail, aggiungi anche:
+For Laravel Sail, also:
 
 - Docker
 - Docker Compose
 
-In questo progetto Sail deve avviare almeno:
+This project’s Sail setup includes:
 
 - MySQL
 - Redis
 
-Consiglio pratico:
+Practical notes:
 
-- usare Sail con MySQL e Redis come ambiente di sviluppo principale
-- la suite di test usa di default SQLite in-memory (vedi `phpunit.xml`), senza dipendere dal database di sviluppo
-- per eseguire i test contro MySQL (es. verifiche specifiche del motore), imposta `DB_CONNECTION=mysql` e le variabili `DB_*` prima di lanciare `php artisan test`
+- Prefer Sail with MySQL and Redis as the main development environment.
+- The test suite defaults to SQLite in-memory (see `phpunit.xml`), independent of your dev database.
+- To run tests against MySQL (e.g. engine-specific checks), set `DB_CONNECTION=mysql` and the `DB_*` variables before `php artisan test`.
 
-## Installazione passo-passo
+## Step-by-step installation
 
-### 1. Entrare nella root applicativa
+### 1. Go to the application root
 
 ```bash
 cd workshop-manager
 ```
 
-### 2. Installare le dipendenze backend
+### 2. Install backend dependencies
 
 ```bash
 composer install
 ```
 
-### 3. Installare le dipendenze frontend
+### 3. Install frontend dependencies
 
 ```bash
 npm install
 ```
 
-### 4. Preparare il file ambiente
+### 4. Create the environment file
 
 ```bash
 cp .env.example .env
 ```
 
-### 5. Scegliere il metodo di esecuzione
+### 5. Choose how you run the app
 
-#### Opzione consigliata: Laravel Sail
+#### Recommended: Laravel Sail
 
-Laravel Sail e' il percorso migliore se vuoi un ambiente uniforme per macOS, Linux e Windows senza configurazioni locali complesse.
+Laravel Sail works well when you want a consistent environment on macOS, Linux, and Windows without heavy local configuration.
 
-Questo progetto usa Sail con:
+This project uses Sail with:
 
 - MySQL
 - Redis
 
-Il repository include gia' il file `compose.yaml` con i servizi necessari.
+The repo already includes `compose.yaml` with the required services.
 
-Per partire:
+Start the stack:
 
 ```bash
 docker compose up -d
 ```
 
-Se preferisci il wrapper Sail standard:
+Or use the Sail script:
 
 ```bash
 ./vendor/bin/sail up -d
 ```
 
-Poi esegui le migration dentro il container:
+Run migrations inside the container:
 
 ```bash
 ./vendor/bin/sail artisan migrate
 ```
 
-Se vuoi anche installare i dati demo o altri seed:
+Optional demo or other seeds:
 
 ```bash
 ./vendor/bin/sail artisan db:seed
 ```
 
-#### Opzione locale: MySQL senza Docker
+#### Local option: MySQL without Docker
 
-Se non usi Sail, configura MySQL in `.env` con:
+If you do not use Sail, configure MySQL in `.env`, for example:
 
 ```dotenv
 DB_CONNECTION=mysql
@@ -132,48 +132,48 @@ QUEUE_CONNECTION=database
 CACHE_STORE=database
 ```
 
-### 6. Generare la chiave applicativa
+### 6. Generate the application key
 
 ```bash
 php artisan key:generate
 ```
 
-### 7. Eseguire le migration
+### 7. Run migrations
 
 ```bash
 php artisan migrate
 ```
 
-### 8. Costruire gli asset oppure avviare il dev server
+### 8. Build assets or start the dev server
 
-Build una tantum:
+One-off production build:
 
 ```bash
 npm run build
 ```
 
-Oppure sviluppo interattivo:
+Interactive development:
 
 ```bash
 composer run dev
 ```
 
-## Avvio in sviluppo
+## Running in development
 
-Il comando consigliato per lavorare localmente e':
+Recommended local workflow:
 
 ```bash
 composer run dev
 ```
 
-Questo avvia:
+This starts:
 
-- server Laravel
-- queue listener
-- Laravel Pail per i log
+- Laravel server
+- Queue worker
+- Laravel Pail (logs)
 - Vite dev server
 
-Se stai usando Sail, l'equivalente pratico e':
+With Sail, a practical equivalent is:
 
 ```bash
 ./vendor/bin/sail up -d
@@ -181,7 +181,7 @@ Se stai usando Sail, l'equivalente pratico e':
 ./vendor/bin/sail artisan pail --timeout=0
 ```
 
-Se vuoi separare i processi:
+To run processes separately:
 
 ```bash
 php artisan serve
@@ -190,37 +190,37 @@ php artisan queue:listen --tries=1 --timeout=0
 php artisan pail --timeout=0
 ```
 
-## Verifica qualita e test
+## Quality checks and testing
 
-### Test applicativi
+### Application tests
 
-Di default i test usano SQLite in-memory (`phpunit.xml`). Per solo PHPUnit/Pest senza Pint:
+Tests default to SQLite in-memory (`phpunit.xml`). To run Pest/PHPUnit without Pint first:
 
 ```bash
 composer run test:php -- --compact
 ```
 
-Oppure:
+Or:
 
 ```bash
 php artisan test --compact
 ```
 
-Se stai usando Sail (stesso default SQLite in-memory per i test):
+With Sail (same SQLite-in-memory default):
 
 ```bash
 ./vendor/bin/sail artisan test --compact
 ```
 
-Per forzare i test sul database MySQL di Sail (variabili gia' presenti nel container):
+To force tests against Sail’s MySQL (variables as already set in the container):
 
 ```bash
 DB_CONNECTION=mysql DB_HOST=mysql DB_DATABASE=testing ./vendor/bin/sail artisan test --compact
 ```
 
-### Test browser (Pest + Playwright)
+### Browser tests (Pest + Playwright)
 
-I test in `tests/Browser` non sono inclusi nel comando `php artisan test` predefinito (solo `Unit` e `Feature` in `phpunit.xml`). Eseguili con:
+Tests under `tests/Browser` are not part of the default `php artisan test` run (only `Unit` and `Feature` in `phpunit.xml`). Run them with:
 
 ```bash
 npm install
@@ -228,7 +228,7 @@ npx playwright install
 composer run test:browser -- --compact
 ```
 
-Con Sail, dalla root del progetto applicativo:
+With Sail, from the application root:
 
 ```bash
 ./vendor/bin/sail npm install
@@ -236,7 +236,7 @@ Con Sail, dalla root del progetto applicativo:
 ./vendor/bin/sail composer run test:browser -- --compact
 ```
 
-### Check frontend
+### Frontend checks
 
 ```bash
 npm run lint:check
@@ -244,50 +244,50 @@ npm run format:check
 npm run types:check
 ```
 
-### Check integrato
+### Full check
 
 ```bash
 composer run test
 composer run ci:check
 ```
 
-## Troubleshooting rapido
+## Quick troubleshooting
 
-### Errore Vite manifest mancante
+### Missing Vite manifest
 
-Esegui:
+Run:
 
 ```bash
 npm run build
 ```
 
-Oppure, in sviluppo:
+Or, in development:
 
 ```bash
 npm run dev
 ```
 
-### Login o pagine protette non funzionano dopo setup
+### Login or protected pages fail after setup
 
-Controlla:
+Check:
 
 - `.env`
 - `APP_KEY`
-- migrazioni eseguite
-- tabella `sessions` presente
+- Migrations have run
+- The `sessions` table exists
 
-### Queue listener fermo
+### Queue worker not running
 
-Le code usano il driver `database`, quindi la tabella `jobs` deve esistere e il listener deve essere avviato.
+Queues use the `database` driver: the `jobs` table must exist and the worker must be running.
 
-### Email non recapitate
+### Email not delivered
 
-Per default il mailer e' `log`, quindi le email finiscono nei log applicativi e non in una mailbox reale.
+The default mailer is `log`; messages go to the application logs, not a real mailbox.
 
-### Cache o sessioni rompono l'app dopo il setup
+### Cache or sessions break the app after setup
 
-Con `CACHE_STORE=database` e `SESSION_DRIVER=database`, le migration devono essere eseguite correttamente prima di usare l'app.
+With `CACHE_STORE=database` and `SESSION_DRIVER=database`, run migrations successfully before using the app.
 
-### Errori dei test: `could not find driver` con SQLite
+### Tests: `could not find driver` with SQLite
 
-La suite imposta `DB_CONNECTION=sqlite` in `phpunit.xml`. Sul PHP di sistema installa l'estensione SQLite (es. su Debian/Ubuntu `php8.3-sqlite3`) oppure esegui i test nel container Sail, che include gia' i driver necessari.
+The suite sets `DB_CONNECTION=sqlite` in `phpunit.xml`. On host PHP, install the SQLite extension (e.g. on Debian/Ubuntu `php8.3-sqlite3`), or run tests inside the Sail container, which already includes the drivers.
