@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['title', 'description', 'starts_at', 'ends_at', 'capacity', 'created_by'])]
+#[Fillable(['title', 'description', 'workshop_category_id', 'starts_at', 'ends_at', 'capacity', 'created_by'])]
 class Workshop extends Model
 {
     /** @use HasFactory<WorkshopFactory> */
@@ -40,15 +40,43 @@ class Workshop extends Model
      * @param  Builder<static>  $query
      * @return Builder<static>
      */
+    public function scopePast(Builder $query): Builder
+    {
+        return $query->where('starts_at', '<=', now());
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('starts_at');
+    }
+
+    /**
+     * Upcoming workshops first (soonest start), then past (oldest start first).
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeIndexOrder(Builder $query): Builder
+    {
+        return $query
+            ->orderByRaw('CASE WHEN starts_at > ? THEN 0 ELSE 1 END', [now()])
+            ->orderBy('starts_at');
     }
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** @return BelongsTo<WorkshopCategory, $this> */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(WorkshopCategory::class, 'workshop_category_id');
     }
 
     /** @return HasMany<WorkshopRegistration, $this> */
