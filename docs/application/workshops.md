@@ -10,22 +10,22 @@ This document describes **what exists in the codebase today**. Features that are
 
 ## Source-of-truth file map
 
-| Path | Responsibility |
-| ---- | ---------------- |
-| `database/migrations/2026_04_12_094502_create_workshops_table.php` | Creates `workshops` with interval, `capacity`, `created_by` FK to `users`, index on `starts_at`. |
-| `database/migrations/2026_04_12_094503_create_workshop_registrations_table.php` | Creates `workshop_registrations` with FKs and **unique** `(workshop_id, user_id)`. |
-| `app/Enums/WorkshopRegistrationStatus.php` | Backed enum: `confirmed`, `waiting_list`. |
-| `app/Models/Workshop.php` | `creator()`, `registrations()`; scopes `future()` (`starts_at > now()`), `ordered()` (`orderBy('starts_at')`); `HasFactory`. |
-| `app/Models/WorkshopRegistration.php` | `workshop()`, `user()`; scopes `confirmed()`, `waitingList()`; enum cast on `status`; `HasFactory`. |
-| `app/Models/User.php` | `createdWorkshops()`, `workshopRegistrations()`. |
-| `database/factories/WorkshopFactory.php` | Factory with `upcoming()` state for future-dated rows. |
-| `database/factories/WorkshopRegistrationFactory.php` | Factory with `confirmed()` / `waitingList()` states. |
-| `database/seeders/RolePermissionSeeder.php` | Spatie roles `admin`, `employee`; permissions `workshops.view`, `workshops.manage`; assigns permissions to roles. |
-| `database/seeders/AcademyDemoSeeder.php` | Demo users, three future workshops, three registrations (two confirmed, one waiting list). |
-| `database/seeders/DatabaseSeeder.php` | Calls `RolePermissionSeeder` then `AcademyDemoSeeder`. |
-| `app/Http/Controllers/WorkshopController.php` | `index`: loads `future()->ordered()` workshops, maps props for Inertia. |
-| `resources/js/pages/workshops/Index.vue` | Inertia page: cards for `upcomingWorkshops` (title, description, range, capacity). |
-| `resources/js/components/AppSidebar.vue`, `AppHeader.vue` | Main nav entry **Workshops** using Wayfinder `workshops` routes. |
+| Path                                                                            | Responsibility                                                                                                               |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `database/migrations/2026_04_12_094502_create_workshops_table.php`              | Creates `workshops` with interval, `capacity`, `created_by` FK to `users`, index on `starts_at`.                             |
+| `database/migrations/2026_04_12_094503_create_workshop_registrations_table.php` | Creates `workshop_registrations` with FKs and **unique** `(workshop_id, user_id)`.                                           |
+| `app/Enums/WorkshopRegistrationStatus.php`                                      | Backed enum: `confirmed`, `waiting_list`.                                                                                    |
+| `app/Models/Workshop.php`                                                       | `creator()`, `registrations()`; scopes `future()` (`starts_at > now()`), `ordered()` (`orderBy('starts_at')`); `HasFactory`. |
+| `app/Models/WorkshopRegistration.php`                                           | `workshop()`, `user()`; scopes `confirmed()`, `waitingList()`; enum cast on `status`; `HasFactory`.                          |
+| `app/Models/User.php`                                                           | `createdWorkshops()`, `workshopRegistrations()`.                                                                             |
+| `database/factories/WorkshopFactory.php`                                        | Factory with `upcoming()` state for future-dated rows.                                                                       |
+| `database/factories/WorkshopRegistrationFactory.php`                            | Factory with `confirmed()` / `waitingList()` states.                                                                         |
+| `database/seeders/RolePermissionSeeder.php`                                     | Spatie roles `admin`, `employee`; permissions `workshops.view`, `workshops.manage`; assigns permissions to roles.            |
+| `database/seeders/AcademyDemoSeeder.php`                                        | Demo users, three future workshops, three registrations (two confirmed, one waiting list).                                   |
+| `database/seeders/DatabaseSeeder.php`                                           | Calls `RolePermissionSeeder` then `AcademyDemoSeeder`.                                                                       |
+| `app/Http/Controllers/WorkshopController.php`                                   | `index`: loads `future()->ordered()` workshops, maps props for Inertia.                                                      |
+| `resources/js/pages/workshops/Index.vue`                                        | Inertia page: cards for `upcomingWorkshops` (title, description, range, capacity).                                           |
+| `resources/js/components/AppSidebar.vue`, `AppHeader.vue`                       | Main nav entry **Workshops** using Wayfinder `workshops` routes.                                                             |
 
 ## Design decisions
 
@@ -41,12 +41,14 @@ This document describes **what exists in the codebase today**. Features that are
 
 ## Tests (Pest)
 
-| Test file | Coverage |
-| --------- | -------- |
-| `tests/Feature/Domain/WorkshopDomainTest.php` | Eloquent relations, duplicate registration unique constraint, scopes. |
-| `tests/Feature/WorkshopIndexTest.php` | Guest redirect; authenticated Inertia shape for `workshops/Index`. |
-| `tests/Feature/AcademyDemoSeederTest.php` | After `DatabaseSeeder`, roles, users, workshop and registration counts and states. |
-| `tests/Feature/SeededWorkshopsPageTest.php` | After seed, demo workshop titles present in Inertia props for a demo admin user. |
+For how tests are organised and executed across the app, see [`tests.md`](tests.md).
+
+| Test file                                     | Coverage                                                                           |
+| --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `tests/Feature/Domain/WorkshopDomainTest.php` | Eloquent relations, duplicate registration unique constraint, scopes.              |
+| `tests/Feature/WorkshopIndexTest.php`         | Guest redirect; authenticated Inertia shape for `workshops/Index`.                 |
+| `tests/Feature/AcademyDemoSeederTest.php`     | After `DatabaseSeeder`, roles, users, workshop and registration counts and states. |
+| `tests/Feature/SeededWorkshopsPageTest.php`   | After seed, demo workshop titles present in Inertia props for a demo admin user.   |
 
 ## Not implemented (planned / out of scope)
 

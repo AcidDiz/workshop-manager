@@ -6,10 +6,10 @@ For architecture and file ownership, see [`../application/README.md`](../applica
 
 ## What belongs here
 
-| File | Purpose |
-| ---- | ------- |
-| [`README.md`](README.md) (this file) | Index and reading order for API-style reference docs. |
-| [`web-routes.md`](web-routes.md) | Web routes registered in `routes/web.php` and `routes/settings.php`, plus notes on Fortify. |
+| File                                 | Purpose                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| [`README.md`](README.md) (this file) | Index and reading order for API-style reference docs.                                       |
+| [`web-routes.md`](web-routes.md)     | Web routes registered in `routes/web.php` and `routes/settings.php`, plus notes on Fortify. |
 
 ## Reading order
 
