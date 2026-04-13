@@ -3,7 +3,9 @@
 namespace App\Services\Workshop;
 
 use App\Enums\Workshop\WorkshopRegistrationStatusEnum;
+use App\Enums\Workshop\WorkshopReminderKind;
 use App\Models\Workshop;
+use App\Models\WorkshopReminderDispatch;
 use App\Notifications\WorkshopReminderNotification;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
@@ -35,7 +37,7 @@ class WorkshopReminderService
             ])
             ->get();
 
-        return $this->sendReminders($workshops);
+        return $this->sendReminders($workshops, WorkshopReminderKind::DayBefore, $anchor);
     }
 
     /**
@@ -54,20 +56,36 @@ class WorkshopReminderService
                 ->with('user'),
         ]);
 
-        return $this->sendReminders(collect([$workshop]));
+        $anchor = now()->clone()->timezone((string) config('app.timezone'));
+
+        return $this->sendReminders(collect([$workshop]), WorkshopReminderKind::AdminManual, $anchor);
     }
 
     /**
      * @param  Collection<int, Workshop>  $workshops
      */
-    private function sendReminders(Collection $workshops): int
+    private function sendReminders(Collection $workshops, WorkshopReminderKind $kind, CarbonInterface $anchorInAppTz): int
     {
+        $dispatchDate = Carbon::parse($anchorInAppTz)->timezone(config('app.timezone'))->toDateString();
         $sent = 0;
 
         foreach ($workshops as $workshop) {
             foreach ($workshop->registrations as $registration) {
                 $user = $registration->user;
                 if ($user === null) {
+                    continue;
+                }
+
+                $inserted = WorkshopReminderDispatch::query()->insertOrIgnore([
+                    'workshop_id' => $workshop->id,
+                    'user_id' => $user->id,
+                    'kind' => $kind->value,
+                    'dispatch_date' => $dispatchDate,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                if ($inserted === 0) {
                     continue;
                 }
 
