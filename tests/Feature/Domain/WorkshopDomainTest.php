@@ -62,7 +62,7 @@ test('duplicate registration for same workshop and user violates unique constrai
     ]))->toThrow(QueryException::class);
 });
 
-test('future scope returns only workshops that have not started yet', function () {
+test('upcoming scope returns only workshops that have not started yet', function () {
     $creatorId = User::factory()->create()->id;
 
     Workshop::create([
@@ -83,7 +83,7 @@ test('future scope returns only workshops that have not started yet', function (
         'created_by' => $creatorId,
     ]);
 
-    $ids = Workshop::query()->future()->pluck('id')->all();
+    $ids = Workshop::query()->upcoming()->pluck('id')->all();
     $pastId = Workshop::query()->where('title', 'Past')->value('id');
 
     expect($ids)->toContain($upcoming->id);
