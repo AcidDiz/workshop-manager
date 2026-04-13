@@ -1,11 +1,6 @@
 <?php
 
 use App\Exceptions\Workshop\WorkshopRegistrationException;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-use Tests\TestCase;
-
-uses(TestCase::class, LazilyRefreshDatabase::class);
-
 use App\Enums\Workshop\WorkshopRegistrationStatusEnum;
 use App\Models\User;
 use App\Models\Workshop;

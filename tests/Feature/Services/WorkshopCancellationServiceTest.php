@@ -1,10 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-use Tests\TestCase;
-
-uses(TestCase::class, LazilyRefreshDatabase::class);
-
 use App\Models\User;
 use App\Models\Workshop;
 use App\Models\WorkshopRegistration;
