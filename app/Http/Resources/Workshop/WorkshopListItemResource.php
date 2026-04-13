@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Workshop;
 
+use App\Enums\Workshop\WorkshopRegistrationStatusEnum;
+use App\Enums\Workshop\WorkshopStatusEnum;
 use App\Models\Workshop;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -11,6 +13,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class WorkshopListItemResource extends JsonResource
 {
+    public function __construct(
+        $resource,
+        private ?WorkshopRegistrationStatusEnum $myRegistrationStatus = null,
+    ) {
+        parent::__construct($resource);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -20,6 +29,8 @@ class WorkshopListItemResource extends JsonResource
         $workshop = $this->resource;
 
         $isFuture = $workshop->starts_at->isFuture();
+        $timingEnum = $isFuture ? WorkshopStatusEnum::Upcoming : WorkshopStatusEnum::Closed;
+        $confirmed = (int) ($workshop->confirmed_registrations_count ?? 0);
 
         return [
             'id' => $workshop->id,
@@ -28,6 +39,8 @@ class WorkshopListItemResource extends JsonResource
             'starts_at' => $workshop->starts_at->toIso8601String(),
             'ends_at' => $workshop->ends_at->toIso8601String(),
             'capacity' => $workshop->capacity,
+            'confirmed_registrations_count' => $confirmed,
+            'enrollment' => $confirmed.'/'.$workshop->capacity,
             'category' => $workshop->relationLoaded('category') && $workshop->category
                 ? [
                     'id' => $workshop->category->id,
@@ -47,6 +60,8 @@ class WorkshopListItemResource extends JsonResource
                     'name' => '—',
                 ],
             'timing_status' => $isFuture ? 'upcoming' : 'closed',
+            'timing_status_badge_class' => $timingEnum->badgeClassName(),
+            'my_registration_status' => $this->myRegistrationStatus?->value,
         ];
     }
 }

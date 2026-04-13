@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\Workshop\WorkshopRegistrationStatusEnum;
 use App\Models\Scopes\Workshop\WorkshopFilterScopes;
 use App\Models\Scopes\Workshop\WorkshopSortScopes;
 use Database\Factories\WorkshopFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -47,5 +49,20 @@ class Workshop extends Model
     public function registrations(): HasMany
     {
         return $this->hasMany(WorkshopRegistration::class);
+    }
+
+    /**
+     * Eager `confirmed_registrations_count` for list payloads (confirmed seats only).
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeWithConfirmedRegistrationCount(Builder $query): Builder
+    {
+        return $query->withCount([
+            'registrations as confirmed_registrations_count' => function (Builder $relation): void {
+                $relation->where('status', WorkshopRegistrationStatusEnum::Confirmed);
+            },
+        ]);
     }
 }

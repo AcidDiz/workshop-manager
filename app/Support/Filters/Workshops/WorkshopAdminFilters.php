@@ -33,6 +33,7 @@ class WorkshopAdminFilters
 
         $workshops = Workshop::query()
             ->withIndexRelations()
+            ->withConfirmedRegistrationCount()
             ->status($effectiveStatus)
             ->filterCategoryId($validated['category_id'] ?? null)
             ->searchTitle($validated['title'] ?? null)
