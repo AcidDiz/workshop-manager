@@ -55,6 +55,8 @@ const mergedFormOptions = computed(() => ({
           </DialogDescription>
         </DialogHeader>
 
+        <slot name="fields" />
+
         <DialogFooter>
           <DialogClose as-child>
             <Button type="button" variant="secondary">

@@ -51,3 +51,18 @@ export type WorkshopFormPayload = {
     ends_at: string;
     capacity: number;
 };
+
+/** Admin workshop detail page (`WorkshopShowResource` → Inertia `workshop`). */
+export type WorkshopShowPayload = {
+    id: number;
+    title: string;
+    description: string | null;
+    starts_at: string;
+    ends_at: string;
+    capacity: number;
+    confirmed_registrations_count: number;
+    waiting_list_registrations_count: number;
+    enrollment: string;
+    category: WorkshopCategoryRef;
+    creator: WorkshopCreatorRef;
+};
