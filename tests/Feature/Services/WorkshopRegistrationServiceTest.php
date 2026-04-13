@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Workshop;
 use App\Models\WorkshopRegistration;
 use App\Services\Workshop\WorkshopRegistrationService;
-use Carbon\Carbon;
 
 test('attach creates a confirmed registration when there is capacity', function () {
     $admin = User::factory()->create();
@@ -117,40 +116,6 @@ test('attach fails when another registration overlaps in time', function () {
     expect(WorkshopRegistration::query()->where('user_id', $employee->id)->count())->toBe(1);
 });
 
-test('interval overlap helper detects overlapping ranges', function () {
-    $service = app(WorkshopRegistrationService::class);
-    $method = new \ReflectionMethod($service, 'workshopIntervalsOverlap');
-    $method->setAccessible(true);
-
-    $a = new Workshop([
-        'starts_at' => Carbon::parse('2026-05-01 10:00:00'),
-        'ends_at' => Carbon::parse('2026-05-01 12:00:00'),
-    ]);
-    $b = new Workshop([
-        'starts_at' => Carbon::parse('2026-05-01 11:00:00'),
-        'ends_at' => Carbon::parse('2026-05-01 13:00:00'),
-    ]);
-
-    expect($method->invoke($service, $a, $b))->toBeTrue();
-});
-
-test('interval overlap helper treats adjacent intervals as non overlapping', function () {
-    $service = app(WorkshopRegistrationService::class);
-    $method = new \ReflectionMethod($service, 'workshopIntervalsOverlap');
-    $method->setAccessible(true);
-
-    $a = new Workshop([
-        'starts_at' => Carbon::parse('2026-05-01 10:00:00'),
-        'ends_at' => Carbon::parse('2026-05-01 12:00:00'),
-    ]);
-    $b = new Workshop([
-        'starts_at' => Carbon::parse('2026-05-01 12:00:00'),
-        'ends_at' => Carbon::parse('2026-05-01 14:00:00'),
-    ]);
-
-    expect($method->invoke($service, $a, $b))->toBeFalse();
-});
-
 test('attach allows non overlapping workshops for the same user', function () {
     $admin = User::factory()->create();
     $employee = User::factory()->create();
@@ -217,4 +182,33 @@ test('attachAsAdmin fails when the subject is already registered', function () {
     $service = app(WorkshopRegistrationService::class);
     expect(fn () => $service->attachAsAdmin($employee, $workshop))
         ->toThrow(WorkshopRegistrationException::class, 'This user is already registered for this workshop.');
+});
+
+test('attachAsAdmin fails when another registration overlaps in time', function () {
+    $admin = User::factory()->create();
+    $employee = User::factory()->create();
+
+    $startsA = now()->addDays(3)->startOfHour();
+    $workshopA = Workshop::factory()->upcoming()->create([
+        'starts_at' => $startsA,
+        'ends_at' => (clone $startsA)->addHours(4),
+        'capacity' => 5,
+        'created_by' => $admin->id,
+    ]);
+
+    $workshopB = Workshop::factory()->upcoming()->create([
+        'starts_at' => (clone $startsA)->addHours(2),
+        'ends_at' => (clone $startsA)->addHours(6),
+        'capacity' => 5,
+        'created_by' => $admin->id,
+    ]);
+
+    WorkshopRegistration::factory()->confirmed()->create([
+        'workshop_id' => $workshopA->id,
+        'user_id' => $employee->id,
+    ]);
+
+    $service = app(WorkshopRegistrationService::class);
+    expect(fn () => $service->attachAsAdmin($employee, $workshopB))
+        ->toThrow(WorkshopRegistrationException::class, 'This user already has another registration overlapping this workshop time.');
 });
