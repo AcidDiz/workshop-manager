@@ -205,7 +205,7 @@ Realtime features expect **`BROADCAST_CONNECTION=reverb`** (see `.env.example`) 
 - **`REVERB_HOST` / `REVERB_PORT` / `REVERB_SCHEME`** are used by **Laravel (PHP)** when it publishes events to Reverb over HTTP (Pusher-compatible API). Inside Sail, PHP runs in the `laravel.test` container: **`localhost` there is the app container itself**, not Reverb. Setting `REVERB_HOST=localhost` typically causes `BroadcastException` / cURL “connection refused” to port 8080.
 - **`VITE_REVERB_HOST` / `VITE_REVERB_PORT` / `VITE_REVERB_SCHEME`** are baked into the **frontend** bundle for **Laravel Echo** (the browser’s WebSocket client). The browser must use a hostname and port it can actually reach on your machine (published port), not the Docker service name `reverb`.
 
-The workshop admin statistics stream is broadcast **immediately after the database transaction commits** (no queue worker required for that UI update).
+The workshop admin statistics stream is broadcast **immediately after the database transaction commits** (no queue worker required for that UI update). **`Workshop` `updated` events** only trigger a refresh when `starts_at`, `ends_at`, or `title` change (metrics-relevant fields); purely cosmetic edits such as **description** do not publish. **`WorkshopRegistration` `updated`** broadcasts when `status`, `workshop_id`, or `user_id` change.
 
 #### `.env` with Laravel Sail (recommended)
 
@@ -281,6 +281,8 @@ Production requires a system cron entry that runs Laravel’s scheduler every mi
 ```
 
 Manual runs (e.g. with Sail): `./vendor/bin/sail artisan workshops:remind`. Ensure `MAIL_*` is configured so notifications can be delivered.
+
+**Idempotency (same calendar day, app timezone):** each `(workshop, user, reminder kind, dispatch_date)` is stored in `workshop_reminder_dispatches` before the notification is sent. A second run of `workshops:remind`, a second click on “send reminders” for the same workshop, or a mix of both on the **same local day** will not email the same participant again for that kind. To intentionally resend on the same day (e.g. after a failed mailer), delete the relevant rows in that table or wait until the next calendar day.
 
 ## Quality checks and testing
 
