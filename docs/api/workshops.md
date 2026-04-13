@@ -12,7 +12,7 @@ Both routes live inside the `auth` + `verified` group in `routes/web.php`:
 - **Admin** — `GET /admin/workshops` → `admin.workshops.index` → `App\Http\Controllers\Admin\Workshops\WorkshopIndexController`
 
 ```php
-// routes/web.php (excerpt; imports include WorkshopRegistrationAttachController / WorkshopRegistrationDetachController)
+// routes/web.php (excerpt; imports include WorkshopShowController, WorkshopParticipantAttachController, WorkshopParticipantDetachController, WorkshopRegistrationAttachController / WorkshopRegistrationDetachController)
 Route::middleware(['can:viewAny,'.Workshop::class])
     ->prefix('app')
     ->as('app.')
@@ -36,6 +36,18 @@ Route::prefix('admin')
             Route::get('workshops/create', WorkshopCreateController::class)->name('workshops.create');
             Route::post('workshops', WorkshopStoreController::class)->name('workshops.store');
         });
+
+        Route::get('workshops/{workshop}', WorkshopShowController::class)
+            ->middleware(['can:update,workshop'])
+            ->name('workshops.show');
+
+        Route::post('workshops/{workshop}/participants', WorkshopParticipantAttachController::class)
+            ->middleware(['can:update,workshop'])
+            ->name('workshops.participants.attach');
+
+        Route::delete('workshops/{workshop}/participants', WorkshopParticipantDetachController::class)
+            ->middleware(['can:update,workshop'])
+            ->name('workshops.participants.detach');
 
         Route::get('workshops/{workshop}/edit', WorkshopEditController::class)
             ->middleware(['can:update,workshop'])
@@ -64,6 +76,9 @@ Additional **admin workshop management** routes (same `auth` + `verified` prefix
 | -------- | ---------------------------------- | ------------------------- | -------------------------------- | ----------------------------- |
 | `GET`    | `/admin/workshops/create`          | `admin.workshops.create`  | `can:create,App\Models\Workshop` | `create` → `workshops.manage` |
 | `POST`   | `/admin/workshops`                 | `admin.workshops.store`   | `can:create,App\Models\Workshop` | `create` → `workshops.manage` |
+| `GET`    | `/admin/workshops/{workshop}`      | `admin.workshops.show`    | `can:update,workshop`            | `update` → `workshops.manage` |
+| `POST`   | `/admin/workshops/{workshop}/participants` | `admin.workshops.participants.attach` | `can:update,workshop` | `update` → `workshops.manage` |
+| `DELETE` | `/admin/workshops/{workshop}/participants` | `admin.workshops.participants.detach` | `can:update,workshop` | `update` → `workshops.manage` |
 | `GET`    | `/admin/workshops/{workshop}/edit` | `admin.workshops.edit`    | `can:update,workshop`            | `update` → `workshops.manage` |
 | `PUT`    | `/admin/workshops/{workshop}`      | `admin.workshops.update`  | `can:update,workshop`            | `update` → `workshops.manage` |
 | `DELETE` | `/admin/workshops/{workshop}`      | `admin.workshops.destroy` | `can:delete,workshop`            | `delete` → `workshops.manage` |
@@ -131,6 +146,9 @@ Index prop keys are **split by route**: the app page never receives `workshopTab
 | --------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `WorkshopCreateController`  | `GET admin/workshops/create`          | `200`, Inertia `admin/workshops/Create`, props: `categories` (`id`, `name`).                                             |
 | `WorkshopStoreController`   | `POST admin/workshops`                | `302` to `admin.workshops.index`, `Inertia::flash('toast', …)` success message. Body: see **Store / update body** below. |
+| `WorkshopShowController`    | `GET admin/workshops/{workshop}`      | `200`, Inertia `admin/workshops/Show`, props: `workshop` (`WorkshopShowResource`), `participantList`, `assignableUsers` (employees not yet registered for this workshop), `participantTableColumns` (includes **`_actions`**), `filters` (`sort`/`direction` always `null`). |
+| `WorkshopParticipantAttachController` | `POST admin/workshops/{workshop}/participants` | `302` back with flash toast. Body: `user_id` (required, must be a user with **`employee`** role). Uses **`WorkshopRegistrationService::attachAsAdmin`**: skips the self-service “workshop must be upcoming” rule; still enforces duplicate registration and schedule overlap for that user; confirmed vs waiting list by capacity. |
+| `WorkshopParticipantDetachController` | `DELETE admin/workshops/{workshop}/participants` | `302` back with flash toast. Body: `user_id`. Delegates to **`WorkshopCancellationService::detach`** (same FIFO promotion behaviour as app self-detach when a **confirmed** seat is freed). |
 | `WorkshopEditController`    | `GET admin/workshops/{workshop}/edit` | `200`, Inertia `admin/workshops/Edit`, props: `categories`, `workshop` (form payload from `WorkshopFormResource`).       |
 | `WorkshopUpdateController`  | `PUT admin/workshops/{workshop}`      | Same redirect + flash as store. Body: same fields as store.                                                              |
 | `WorkshopDestroyController` | `DELETE admin/workshops/{workshop}`   | Same redirect + flash. **DB cascade** removes related `workshop_registrations`.                                          |
@@ -164,6 +182,9 @@ Page-specific props from the workshop index controllers:
 | `filters`              | `object`  | app + admin             | Echo of active / requested filters (see below).                                                                                |
 | `cardFilterFields`     | `array`   | **app** index only      | Filter bar field defs for the card UI (`param`, `label`, `input_type`, optional `options`).                                    |
 | `workshopTableColumns` | `array`   | **admin** index only    | Non-empty; includes a final **`_actions`** column with `cast_type` `actions`.                                                |
+| `participantList`    | `array`   | **admin** show only     | Plain objects from `WorkshopParticipantRowResource` (confirmed rows before waiting list).                                     |
+| `assignableUsers`    | `array`   | **admin** show only     | `{ id, name, email }` for **`employee`** users not already registered on this workshop. |
+| `participantTableColumns` | `array` | **admin** show only | From `WorkshopRegistrationTableColumns::adminShowTable()`; includes **`_actions`**; status uses a page-level `Table` slot for badge styling. |
 
 ### `filters` shape
 
@@ -262,7 +283,7 @@ Accept: text/html
 | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Guest                                                                                           | Redirect to login (Fortify).                                                 |
 | Authenticated but cannot `viewAny` workshop                                                     | **403** on both URIs (FormRequest `authorize` fails before controller body). |
-| Employee hitting `/admin/workshops` (or any admin workshop CRUD URI) without `workshops.manage` | **403** from `can:*` middleware.                                             |
+| Employee hitting `/admin/workshops` (or any admin workshop show / CRUD URI) without `workshops.manage` | **403** from `can:*` middleware.                                             |
 | Invalid query parameters (index GET)                                                            | Validation error (redirect with session errors or equivalent).               |
 | Invalid POST/PUT body (create / update)                                                         | Redirect back with session validation errors.                                |
 
@@ -275,6 +296,11 @@ Accept: text/html
 | `app/Http/Controllers/Admin/Workshops/WorkshopIndexController.php`   | Admin index.                       |
 | `app/Http/Controllers/Admin/Workshops/WorkshopCreateController.php`  | Admin create form.                 |
 | `app/Http/Controllers/Admin/Workshops/WorkshopStoreController.php`   | Admin create persist.              |
+| `app/Http/Controllers/Admin/Workshops/WorkshopShowController.php`    | Admin workshop detail + participants table. |
+| `app/Http/Controllers/Admin/Workshops/WorkshopParticipantAttachController.php` | Admin add employee to workshop. |
+| `app/Http/Controllers/Admin/Workshops/WorkshopParticipantDetachController.php` | Admin remove user registration. |
+| `app/Http/Requests/Workshops/AttachWorkshopParticipantRequest.php`   | Validates `user_id` (employee). |
+| `app/Http/Requests/Workshops/DetachWorkshopParticipantRequest.php`   | Validates `user_id`. |
 | `app/Http/Controllers/Admin/Workshops/WorkshopEditController.php`    | Admin edit form.                   |
 | `app/Http/Controllers/Admin/Workshops/WorkshopUpdateController.php`  | Admin update persist.              |
 | `app/Http/Controllers/Admin/Workshops/WorkshopDestroyController.php` | Admin delete.                      |
@@ -284,3 +310,6 @@ Accept: text/html
 | `app/Support/Filters/Workshops/WorkshopUserFilters.php`              | Non-admin index query + `cardFilterFields`.                      |
 | `app/Support/Filters/Workshops/WorkshopAdminFilters.php`             | Admin index query + `workshopTableColumns`.                      |
 | `app/Http/Resources/Workshop/WorkshopListItemResource.php`           | `workshopList` row shape.          |
+| `app/Http/Resources/Workshop/WorkshopShowResource.php`               | Admin show `workshop` prop.        |
+| `app/Http/Resources/Workshop/WorkshopParticipantRowResource.php`    | Admin show `participantList` rows. |
+| `app/Support/Tables/WorkshopRegistrationTableColumns.php`            | Admin show participant table columns. |

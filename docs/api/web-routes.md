@@ -68,6 +68,9 @@ All `/admin/workshops*` routes below use middleware: `auth`, `verified`. Listing
 | GET | `/admin/workshops` | `admin.workshops.index` | Inertia `admin/workshops/Index`; table, filters, optional `sort` / `direction`. **403** without manage permission. |
 | GET | `/admin/workshops/create` | `admin.workshops.create` | Inertia `admin/workshops/Create` with `categories`. |
 | POST | `/admin/workshops` | `admin.workshops.store` | Validates body; **302** to index + flash toast on success. |
+| GET | `/admin/workshops/{workshop}` | `admin.workshops.show` | Inertia `admin/workshops/Show`; workshop summary, participant table (confirmed first, then waiting list), add/remove participants. **`can:update,workshop`** → `workshops.manage`. |
+| POST | `/admin/workshops/{workshop}/participants` | `admin.workshops.participants.attach` | Form: `user_id` (employee). **`can:update,workshop`**. |
+| DELETE | `/admin/workshops/{workshop}/participants` | `admin.workshops.participants.detach` | Form: `user_id`. **`can:update,workshop`**. |
 | GET | `/admin/workshops/{workshop}/edit` | `admin.workshops.edit` | Inertia `admin/workshops/Edit` with `workshop` + `categories`. |
 | PUT | `/admin/workshops/{workshop}` | `admin.workshops.update` | **302** to index + flash toast. |
 | DELETE | `/admin/workshops/{workshop}` | `admin.workshops.destroy` | **302** to index + flash toast; DB cascades registrations. |
