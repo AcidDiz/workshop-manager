@@ -41,4 +41,14 @@ class WorkshopPolicy
     {
         return $user->can('workshops.manage');
     }
+
+    public function attachRegistration(User $user, Workshop $workshop): bool
+    {
+        return $this->view($user, $workshop);
+    }
+
+    public function detachRegistration(User $user, Workshop $workshop): bool
+    {
+        return $this->view($user, $workshop);
+    }
 }

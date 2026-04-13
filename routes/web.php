@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\Workshops\WorkshopIndexController as AdminWorksho
 use App\Http\Controllers\Admin\Workshops\WorkshopStoreController;
 use App\Http\Controllers\Admin\Workshops\WorkshopUpdateController;
 use App\Http\Controllers\App\Workshops\WorkshopIndexController as AppWorkshopIndexController;
+use App\Http\Controllers\App\Workshops\WorkshopRegistrationAttachController;
+use App\Http\Controllers\App\Workshops\WorkshopRegistrationDetachController;
 use App\Models\Workshop;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -23,6 +25,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->as('app.')
         ->group(function () {
             Route::get('workshops', AppWorkshopIndexController::class)->name('workshops.index');
+
+            Route::post('workshops/{workshop}/registrations', WorkshopRegistrationAttachController::class)
+                ->middleware(['can:attachRegistration,workshop'])
+                ->name('workshops.registrations.attach');
+
+            Route::delete('workshops/{workshop}/registrations', WorkshopRegistrationDetachController::class)
+                ->middleware(['can:detachRegistration,workshop'])
+                ->name('workshops.registrations.detach');
         });
 
     Route::prefix('admin')

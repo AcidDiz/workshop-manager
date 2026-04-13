@@ -52,8 +52,8 @@ test('admins with workshops.manage receive table mode and column metadata', func
             ->where('filters.status', null)
             ->has('workshopTableColumns')
             ->where('workshopTableColumns.0.field_name', 'title')
-            ->where('workshopTableColumns.5.field_name', '_actions')
-            ->where('workshopTableColumns.5.cast_type', 'actions'));
+            ->where('workshopTableColumns.6.field_name', '_actions')
+            ->where('workshopTableColumns.6.cast_type', 'actions'));
 });
 
 test('admins can sort the workshop list via query string', function () {
