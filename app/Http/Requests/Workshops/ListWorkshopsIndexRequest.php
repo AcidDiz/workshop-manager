@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Workshops;
 
+use App\Enums\Workshop\WorkshopStatusEnum;
 use App\Models\Workshop;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,7 +20,7 @@ class ListWorkshopsIndexRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'status' => ['sometimes', 'nullable', Rule::in(['all', 'upcoming', 'closed'])],
+            'status' => ['sometimes', 'nullable', Rule::enum(WorkshopStatusEnum::class)],
             'category_id' => ['sometimes', 'nullable', 'integer', 'exists:workshop_categories,id'],
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'starts_on' => ['sometimes', 'nullable', 'date'],

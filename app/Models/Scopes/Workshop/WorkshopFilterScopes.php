@@ -2,6 +2,7 @@
 
 namespace App\Models\Scopes\Workshop;
 
+use App\Enums\Workshop\WorkshopStatusEnum;
 use Illuminate\Database\Eloquent\Builder;
 
 trait WorkshopFilterScopes
@@ -39,9 +40,9 @@ trait WorkshopFilterScopes
      */
     public function scopeStatus(Builder $query, string $status): Builder
     {
-        return match ($status) {
-            'upcoming' => $query->upcoming(),
-            'closed' => $query->closed(),
+        return match (WorkshopStatusEnum::tryFrom($status)) {
+            WorkshopStatusEnum::Upcoming => $query->upcoming(),
+            WorkshopStatusEnum::Closed => $query->closed(),
             default => $query,
         };
     }
