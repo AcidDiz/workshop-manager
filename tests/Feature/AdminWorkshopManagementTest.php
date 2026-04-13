@@ -4,10 +4,17 @@ use App\Models\User;
 use App\Models\Workshop;
 use App\Models\WorkshopCategory;
 use App\Models\WorkshopRegistration;
+use App\Notifications\WorkshopReminderNotification;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(fn () => $this->seed(RolePermissionSeeder::class));
+
+afterEach(function (): void {
+    Carbon::setTestNow(null);
+});
 
 test('admin can create a workshop with valid payload', function () {
     $admin = User::factory()->create();
@@ -380,4 +387,123 @@ test('admin create and edit pages render with categories', function () {
             ->component('admin/workshops/Edit')
             ->has('workshop')
             ->where('workshop.id', $workshop->id));
+});
+
+test('employee cannot dispatch next-day workshop reminders', function () {
+    $employee = User::factory()->create();
+    $employee->assignRole('employee');
+
+    $this->actingAs($employee)
+        ->post(route('admin.workshops.reminders.next-day'))
+        ->assertForbidden();
+});
+
+test('admin can dispatch next-day reminders for workshops starting tomorrow', function () {
+    Notification::fake();
+
+    Carbon::setTestNow(Carbon::parse('2026-06-10 12:00:00', 'UTC'));
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $tomorrow = Workshop::factory()->create([
+        'starts_at' => Carbon::parse('2026-06-11 09:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-11 12:00:00', 'UTC'),
+        'created_by' => $admin->id,
+    ]);
+
+    $later = Workshop::factory()->create([
+        'starts_at' => Carbon::parse('2026-06-12 09:00:00', 'UTC'),
+        'ends_at' => Carbon::parse('2026-06-12 12:00:00', 'UTC'),
+        'created_by' => $admin->id,
+    ]);
+
+    $confirmedTomorrow = User::factory()->create();
+    $confirmedTomorrow->assignRole('employee');
+    WorkshopRegistration::factory()->confirmed()->create([
+        'workshop_id' => $tomorrow->id,
+        'user_id' => $confirmedTomorrow->id,
+    ]);
+
+    $confirmedLater = User::factory()->create();
+    $confirmedLater->assignRole('employee');
+    WorkshopRegistration::factory()->confirmed()->create([
+        'workshop_id' => $later->id,
+        'user_id' => $confirmedLater->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.workshops.reminders.next-day'))
+        ->assertRedirect();
+
+    Notification::assertSentToTimes($confirmedTomorrow, WorkshopReminderNotification::class, 1);
+    Notification::assertNotSentTo($confirmedLater, WorkshopReminderNotification::class);
+});
+
+test('employee cannot dispatch reminders for a single workshop', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $employee = User::factory()->create();
+    $employee->assignRole('employee');
+
+    $workshop = Workshop::factory()->upcoming()->create([
+        'created_by' => $admin->id,
+    ]);
+
+    $this->actingAs($employee)
+        ->post(route('admin.workshops.reminders.dispatch', $workshop))
+        ->assertForbidden();
+});
+
+test('admin can dispatch reminders for a single upcoming workshop', function () {
+    Notification::fake();
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $participant = User::factory()->create();
+    $participant->assignRole('employee');
+
+    $workshop = Workshop::factory()->upcoming()->create([
+        'created_by' => $admin->id,
+    ]);
+
+    WorkshopRegistration::factory()->confirmed()->create([
+        'workshop_id' => $workshop->id,
+        'user_id' => $participant->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.workshops.reminders.dispatch', $workshop))
+        ->assertRedirect();
+
+    Notification::assertSentToTimes($participant, WorkshopReminderNotification::class, 1);
+});
+
+test('admin cannot dispatch reminders for a workshop that has already started', function () {
+    Notification::fake();
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $participant = User::factory()->create();
+    $participant->assignRole('employee');
+
+    $workshop = Workshop::factory()->create([
+        'starts_at' => now()->subDay(),
+        'ends_at' => now()->subDay()->addHours(2),
+        'created_by' => $admin->id,
+    ]);
+
+    WorkshopRegistration::factory()->confirmed()->create([
+        'workshop_id' => $workshop->id,
+        'user_id' => $participant->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.workshops.reminders.dispatch', $workshop))
+        ->assertRedirect();
+
+    Notification::assertNothingSent();
 });
