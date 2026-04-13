@@ -9,13 +9,13 @@ For installation, running the stack, and quality commands, use the root [`../STA
 | Folder / file                        | Purpose                                                                           |
 | ------------------------------------ | --------------------------------------------------------------------------------- |
 | [`README.md`](README.md) (this file) | Index: reading order and links to all application docs.                           |
-| [`workshops.md`](workshops.md)       | Workshop domain: models, seeds, read-only listing UI, tests, and known gaps.      |
+| [`workshops.md`](workshops.md)       | Workshop domain: models, filter/sort scope traits, `BuildWorkshopIndexData`, table column metadata, read-only listing UI, tests, known gaps. |
 | [`tests.md`](tests.md)               | How tests are organised, created, and run (Pest, Feature, Browser, SQLite, Vite). |
 
 ## Suggested reading order
 
 1. [`tests.md`](tests.md) — Test layout and commands (useful before changing behaviour covered by tests).
-2. [`workshops.md`](workshops.md) — Current workshop and registration model, demo data, and Inertia index page.
+2. [`workshops.md`](workshops.md) — Workshop model, query scopes, index pipeline, demo data, and Inertia app/admin index pages.
 
 ## Conventions
 
