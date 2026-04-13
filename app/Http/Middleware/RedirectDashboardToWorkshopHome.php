@@ -1,17 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Middleware;
 
 use App\Models\Workshop;
-use Illuminate\Http\RedirectResponse;
+use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-class DashboardRedirectController extends Controller
+class RedirectDashboardToWorkshopHome
 {
-    public function __invoke(Request $request): RedirectResponse
+    /**
+     * Send users from the generic /dashboard entry (e.g. Fortify home) to the right area.
+     */
+    public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        assert($user !== null);
+
+        if ($user === null) {
+            return $next($request);
+        }
 
         if ($user->can('create', Workshop::class)) {
             return redirect()->route('admin.dashboard');

@@ -192,7 +192,7 @@ php artisan pail --timeout=0
 
 ### Dashboards
 
-- **`GET /dashboard`** (`dashboard`) is the **generic** authenticated home page from the starter kit; it is not tied to workshop metrics.
+- **`GET /dashboard`** (`dashboard`) is Fortify’s **home** URL: middleware **`redirect.dashboard_home`** sends users to **`admin.dashboard`**, **`app.dashboard`**, or **`profile.edit`** depending on workshop abilities (no Inertia page on `/dashboard` itself).
 - **`GET /app/dashboard`** (`app.dashboard`) is the **employee workshop home**: Inertia `app/dashboard/Index` with **`registrationSummary`** (confirmed and waiting-list counts for the signed-in user). Requires **`can:viewAny,Workshop`** (same middleware group as **`GET /app/workshops`**).
 - **`GET /admin/dashboard`** (`admin.dashboard`) is the **workshop admin overview**: initial aggregate counts come from Inertia props (`statistics`); live updates use **Laravel Reverb** and **Laravel Echo** on the private channel `admin.workshop-statistics` (event `statistics.updated`).
 

@@ -16,7 +16,6 @@ use App\Http\Controllers\App\Dashboard\DashboardIndexController as AppDashboardI
 use App\Http\Controllers\App\Workshops\WorkshopIndexController as AppWorkshopIndexController;
 use App\Http\Controllers\App\Workshops\WorkshopRegistrationAttachController;
 use App\Http\Controllers\App\Workshops\WorkshopRegistrationDetachController;
-use App\Http\Controllers\DashboardRedirectController;
 use App\Models\Workshop;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -26,7 +25,9 @@ Route::inertia('/', 'Welcome', [
 ])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', DashboardRedirectController::class)->name('dashboard');
+    Route::get('dashboard', fn () => redirect()->route('profile.edit'))
+        ->middleware('redirect.dashboard_home')
+        ->name('dashboard');
 
     Route::middleware(['can:viewAny,'.Workshop::class])
         ->prefix('app')

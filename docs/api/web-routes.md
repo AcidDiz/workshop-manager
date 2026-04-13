@@ -34,11 +34,11 @@ Typical patterns:
 
 ### Dashboard
 
-Middleware: `auth`, `verified`.
+Middleware: `auth`, `verified`, **`redirect.dashboard_home`**.
 
 | Method | URI          | Route name  | Typical response     |
 | ------ | ------------ | ----------- | -------------------- |
-| GET    | `/dashboard` | `dashboard` | Inertia `Dashboard` (generic authenticated landing from the starter kit; **not** workshop-specific). |
+| GET    | `/dashboard` | `dashboard` | **302** to `admin.dashboard`, `app.dashboard`, or `profile.edit` (Fortify **home** target; no Inertia page on this URI). |
 
 #### Admin workshop overview (manage permission)
 
