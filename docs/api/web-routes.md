@@ -42,6 +42,8 @@ Middleware: `auth`, `verified`.
 
 ### Workshops (domain pages)
 
+Canonical detail (parameters, controllers, Inertia props, examples): [`workshops.md`](workshops.md).
+
 Workshops are split into two distinct web areas:
 
 - **App area** (`/app/*`): employee-facing browsing experience.
@@ -69,23 +71,7 @@ Shared Inertia props (via `HandleInertiaRequests`): `auth.workshop_permissions.v
 
 ### Example: list workshops (default filters for role)
 
-```http
-GET /app/workshops HTTP/1.1
-Host: <your-host>
-Cookie: laravel_session=...
-Accept: text/html
-```
-
-**Typical success:** `200 OK` with HTML shell and Inertia page component `app/workshops/Index` (employee) or a `302` redirect to `admin.workshops.index` (admin).
-
-### Example: admin sorting by title
-
-```http
-GET /admin/workshops?sort=title&direction=desc HTTP/1.1
-Host: <your-host>
-Cookie: laravel_session=...
-Accept: text/html
-```
+See [`workshops.md`](workshops.md#example-requests).
 
 ## Settings (`routes/settings.php`)
 

@@ -10,10 +10,12 @@ For architecture and file ownership, see [`../application/README.md`](../applica
 | ------------------------------------ | ------------------------------------------------------------------------------------------- |
 | [`README.md`](README.md) (this file) | Index and reading order for API-style reference docs.                                       |
 | [`web-routes.md`](web-routes.md)     | Web routes registered in `routes/web.php` and `routes/settings.php`, plus notes on Fortify. |
+| [`workshops.md`](workshops.md)       | Workshop list endpoints: controllers, query params, Inertia props, examples.                |
 
 ## Reading order
 
-1. [`web-routes.md`](web-routes.md) — Method, URI, name, middleware, typical response, examples.
+1. [`web-routes.md`](web-routes.md) — Method, URI, name, middleware, typical response, route inventory.
+2. [`workshops.md`](workshops.md) — Deep dive for `GET /app/workshops` and `GET /admin/workshops` (validation, props, examples).
 
 ## Conventions
 
