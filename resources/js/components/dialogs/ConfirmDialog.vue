@@ -2,6 +2,7 @@
 import { Form } from "@inertiajs/vue3";
 import { computed } from "vue";
 import { Button } from "@/components/ui/button";
+import type { ButtonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -22,12 +23,15 @@ const props = withDefaults(
     description: string;
     confirmLabel?: string;
     cancelLabel?: string;
+    /** Visual style of the submit button (e.g. `destructive` for delete, `default` for neutral confirms). */
+    confirmVariant?: NonNullable<ButtonVariants["variant"]>;
     confirmDataTest?: string;
     formOptions?: Record<string, unknown>;
   }>(),
   {
-    confirmLabel: "Delete",
+    confirmLabel: "Confirm",
     cancelLabel: "Cancel",
+    confirmVariant: "destructive",
     formOptions: () => ({}),
   }
 );
@@ -65,7 +69,7 @@ const mergedFormOptions = computed(() => ({
           </DialogClose>
           <Button
             type="submit"
-            variant="destructive"
+            :variant="confirmVariant"
             :disabled="processing"
             :data-test="confirmDataTest"
           >

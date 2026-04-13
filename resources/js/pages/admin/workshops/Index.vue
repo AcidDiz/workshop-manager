@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import StatusBadge from "@/components/badge/StatusBadge.vue";
+import ConfirmDialog from "@/components/dialogs/ConfirmDialog.vue";
 import Heading from "@/components/Heading.vue";
 import ManageRowActions from "@/components/tables/ManageRowActions.vue";
 import Table from "@/components/tables/Table.vue";
@@ -31,6 +32,8 @@ function timingBadgeClass(row: Record<string, unknown>): string {
   return String(row.timing_status_badge_class ?? "");
 }
 
+const remindTomorrowOpen = ref(false);
+
 defineOptions({
   layout: {
     breadcrumbs: [
@@ -52,10 +55,31 @@ defineOptions({
         title="Workshops"
         description="Filter and review every session. Upcoming rows are listed before past ones."
       />
-      <Button v-if="canManageWorkshops" variant="outline" as-child>
-        <Link :href="adminWorkshops.create.url()">Create workshop</Link>
-      </Button>
+      <div v-if="canManageWorkshops" class="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          data-test="admin-workshops-send-tomorrow-reminders"
+          @click="remindTomorrowOpen = true"
+        >
+          Send Reminders
+        </Button>
+        <Button variant="outline" as-child>
+          <Link :href="adminWorkshops.create.url()">Create workshop</Link>
+        </Button>
+      </div>
     </div>
+
+    <ConfirmDialog
+      v-model:open="remindTomorrowOpen"
+      :form-attributes="adminWorkshops.reminders.nextDay.form()"
+      title="Send tomorrow reminders?"
+      description="This emails every confirmed participant for workshops whose start falls on the next calendar day."
+      confirm-label="Send reminders"
+      cancel-label="Cancel"
+      confirm-variant="default"
+      confirm-data-test="admin-workshops-confirm-tomorrow-reminders"
+    />
 
     <Table
       :columns="workshopTableColumns"
@@ -77,7 +101,9 @@ defineOptions({
           :edit-href="adminWorkshops.edit.url(Number(row.id))"
           :delete-form="adminWorkshops.destroy.form(Number(row.id))"
           dialog-title="Delete workshop"
-          :dialog-description="`This will remove “${String(row.title ?? '')}” and all related enrolment rows. This cannot be undone.`"
+          :dialog-description="`This will remove “${String(
+            row.title ?? ''
+          )}” and all related enrolment rows. This cannot be undone.`"
           confirm-label="Delete workshop"
           :delete-trigger-data-test="`delete-workshop-${Number(row.id)}`"
           confirm-delete-data-test="confirm-delete-workshop-button"

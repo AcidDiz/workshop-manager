@@ -2,7 +2,7 @@
 import { Form, Head, Link, setLayoutProps } from "@inertiajs/vue3";
 import { computed, ref, watch, watchEffect } from "vue";
 import StatusBadge from "@/components/badge/StatusBadge.vue";
-import ConfirmDeleteDialog from "@/components/dialogs/ConfirmDeleteDialog.vue";
+import ConfirmDialog from "@/components/dialogs/ConfirmDialog.vue";
 import Heading from "@/components/Heading.vue";
 import DescriptionList from "@/components/lists/DescriptionList.vue";
 import type { DescriptionListItem } from "@/components/lists/DescriptionList.vue";
@@ -26,6 +26,12 @@ const props = defineProps<{
 const tableRows = computed(() =>
   props.participantList.map((row) => ({ ...row } as Record<string, unknown>))
 );
+
+const workshopHasStarted = computed(
+  () => new Date(props.workshop.starts_at).getTime() <= Date.now()
+);
+
+const remindOpen = ref(false);
 
 const indexUrl = (query: Record<string, string>) => {
   void query;
@@ -126,6 +132,15 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
         description="Confirmed participants are listed first; waiting list follows in registration order."
       />
       <div class="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          data-test="admin-workshop-send-reminders"
+          :disabled="workshopHasStarted"
+          @click="remindOpen = true"
+        >
+          Send reminders
+        </Button>
         <Button variant="outline" as-child>
           <Link :href="adminWorkshops.edit.url(workshop.id)">Edit</Link>
         </Button>
@@ -134,6 +149,18 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
         </Button>
       </div>
     </div>
+
+    <ConfirmDialog
+      v-model:open="remindOpen"
+      :form-attributes="adminWorkshops.reminders.dispatch.form(workshop.id)"
+      title="Send reminders for this workshop?"
+      description="Confirmed participants will receive the same email as the automated “tomorrow” reminder. Waiting-list users are not emailed."
+      confirm-label="Send reminders"
+      cancel-label="Cancel"
+      confirm-variant="default"
+      confirm-data-test="admin-workshop-confirm-send-reminders"
+    />
+
     <section class="grid gap-3 lg:grid-cols-2">
       <DescriptionList :items="workshopSummaryItems" />
 
@@ -213,12 +240,14 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
       </Table>
     </section>
 
-    <ConfirmDeleteDialog
+    <ConfirmDialog
       v-model:open="removeOpen"
       :form-attributes="adminWorkshops.participants.detach.form(workshop.id)"
       title="Remove participant"
       :description="`Remove ${removeUserLabel} from this workshop? Confirmed seats may promote someone from the waiting list.`"
       confirm-label="Remove"
+      cancel-label="Cancel"
+      confirm-variant="destructive"
     >
       <template #fields>
         <input
@@ -228,6 +257,6 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
           :value="removeUserId"
         />
       </template>
-    </ConfirmDeleteDialog>
+    </ConfirmDialog>
   </div>
 </template>

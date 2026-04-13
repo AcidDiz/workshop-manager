@@ -3,7 +3,7 @@ import { Form } from "@inertiajs/vue3";
 import { CalendarRange, Users } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import StatusBadge from "@/components/badge/StatusBadge.vue";
-import ConfirmDeleteDialog from "@/components/dialogs/ConfirmDeleteDialog.vue";
+import ConfirmDialog from "@/components/dialogs/ConfirmDialog.vue";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -139,12 +139,13 @@ function formatRange(startsAt: string, endsAt: string): string {
           Cancel registration
         </Button>
       </div>
-      <ConfirmDeleteDialog
+      <ConfirmDialog
         v-model:open="cancelOpen"
         :form-attributes="appWorkshopRegistrations.detach.form(props.workshop.id)"
         title="Cancel registration?"
         :description="cancelDialogDescription"
         confirm-label="Cancel registration"
+        confirm-variant="destructive"
         :confirm-data-test="`confirm-cancel-registration-${props.workshop.id}`"
         :form-options="{ preserveScroll: true }"
       />

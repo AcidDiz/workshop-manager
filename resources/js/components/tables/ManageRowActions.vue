@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import ConfirmDeleteDialog from '@/components/dialogs/ConfirmDeleteDialog.vue';
+import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
 
 withDefaults(
@@ -43,12 +43,13 @@ const deleteOpen = ref(false);
         >
             Delete
         </Button>
-        <ConfirmDeleteDialog
+        <ConfirmDialog
             v-model:open="deleteOpen"
             :form-attributes="deleteForm"
             :title="dialogTitle"
             :description="dialogDescription"
             :confirm-label="confirmLabel"
+            confirm-variant="destructive"
             :confirm-data-test="confirmDeleteDataTest"
         />
     </div>
