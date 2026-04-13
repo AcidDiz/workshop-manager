@@ -38,7 +38,23 @@ Middleware: `auth`, `verified`.
 
 | Method | URI          | Route name  | Typical response     |
 | ------ | ------------ | ----------- | -------------------- |
-| GET    | `/dashboard` | `dashboard` | Inertia `Dashboard`. |
+| GET    | `/dashboard` | `dashboard` | Inertia `Dashboard` (generic authenticated landing from the starter kit; **not** workshop-specific). |
+
+#### Admin workshop overview (manage permission)
+
+Same `auth` + `verified` stack; **`can:create,App\Models\Workshop`** (same gate as `GET /admin/workshops` → `workshops.manage`).
+
+| Method | URI | Route name | Typical response |
+| ------ | --- | ---------- | ---------------- |
+| GET | `/admin/dashboard` | `admin.dashboard` | Inertia `admin/dashboard/Index` with prop `statistics` (aggregate workshop and registration counts, optional popular workshop, `generated_at`). Live updates use **Laravel Echo + Reverb** on private channel `admin.workshop-statistics` (event `statistics.updated`). |
+
+### Broadcasting (Laravel Reverb / Echo)
+
+Middleware: `web` (session cookie). Private channel authorization uses **`auth`**, **`verified`**.
+
+| Method | URI | Typical use |
+| ------ | --- | ----------- |
+| GET, POST | `/broadcasting/auth` | Laravel Echo subscribes to **private** channels; Laravel returns JSON allowed/denied for the socket connection. CSRF: use **`X-CSRF-TOKEN`** (plain token) or **`X-XSRF-TOKEN`**; this app shares **`csrf_token`** with Inertia for Echo headers. |
 
 ### Workshops (domain pages)
 
@@ -55,6 +71,7 @@ Middleware: `auth`, `verified`, and Laravel `can:viewAny,App\Models\Workshop` (r
 
 | Method | URI              | Route name           | Typical response                                                                                                                                                                                                                                                                                                                                                                               |
 | ------ | ---------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/app/dashboard` | `app.dashboard` | **403** without `viewAny`. Inertia `app/dashboard/Index` with **`registrationSummary`** (`confirmed`, `waiting_list` for the signed-in user). |
 | GET    | `/app/workshops` | `app.workshops.index` | **403** if the user cannot `viewAny` workshops. For admins (`workshops.manage`), this URI **redirects** to `admin.workshops.index` to keep the two areas distinct. For employees, returns Inertia `app/workshops/Index` with `workshopList`, `filters`, and **`cardFilterFields`** for the filter bar (not admin table columns). Query: optional `status` (`all` \| `upcoming` \| `closed`), `category_id`, `title`, `starts_on`. |
 | POST   | `/app/workshops/{workshop}/registrations` | `app.workshops.registrations.attach` | Same group as app index: **`auth`**, **`verified`**, **`can:viewAny,Workshop`**, **`can:attachRegistration,workshop`**. Attach current user as **confirmed** when the workshop is upcoming and has capacity; otherwise **302** back with error toast. |
 | DELETE | `/app/workshops/{workshop}/registrations` | `app.workshops.registrations.detach` | Same middleware pattern with **`can:detachRegistration,workshop`**. Removes the current user’s registration (**idempotent**); **302** back with toast. |

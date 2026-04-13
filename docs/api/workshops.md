@@ -8,15 +8,17 @@ For domain logic (query pipeline, Eloquent scopes, table metadata), see [`../app
 
 Both routes live inside the `auth` + `verified` group in `routes/web.php`:
 
+- **App** — `GET /app/dashboard` → `app.dashboard` → `App\Http\Controllers\App\Dashboard\DashboardIndexController`
 - **App** — `GET /app/workshops` → `app.workshops.index` → `App\Http\Controllers\App\Workshops\WorkshopIndexController`
 - **Admin** — `GET /admin/workshops` → `admin.workshops.index` → `App\Http\Controllers\Admin\Workshops\WorkshopIndexController`
 
 ```php
-// routes/web.php (excerpt; imports include WorkshopShowController, WorkshopNextDayRemindDispatchController, WorkshopRemindDispatchController, WorkshopParticipantAttachController, WorkshopParticipantDetachController, WorkshopRegistrationAttachController / WorkshopRegistrationDetachController)
+// routes/web.php (excerpt; imports include AdminDashboardController, AppDashboardIndexController, WorkshopShowController, WorkshopNextDayRemindDispatchController, WorkshopRemindDispatchController, WorkshopParticipantAttachController, WorkshopParticipantDetachController, WorkshopRegistrationAttachController / WorkshopRegistrationDetachController)
 Route::middleware(['can:viewAny,'.Workshop::class])
     ->prefix('app')
     ->as('app.')
     ->group(function () {
+        Route::get('dashboard', AppDashboardIndexController::class)->name('dashboard');
         Route::get('workshops', AppWorkshopIndexController::class)->name('workshops.index');
 
         Route::post('workshops/{workshop}/registrations', WorkshopRegistrationAttachController::class)
@@ -32,6 +34,7 @@ Route::prefix('admin')
     ->as('admin.')
     ->group(function () {
         Route::middleware(['can:create,'.Workshop::class])->group(function () {
+            Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
             Route::get('workshops', AdminWorkshopIndexController::class)->name('workshops.index');
             Route::get('workshops/create', WorkshopCreateController::class)->name('workshops.create');
             Route::post('workshops', WorkshopStoreController::class)->name('workshops.store');
@@ -71,10 +74,12 @@ Route::prefix('admin')
 
 | URI                    | Route name              | Middleware (order)                                    | Authorization (policy)                               |
 | ---------------------- | ----------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| `GET /app/dashboard` | `app.dashboard` | `auth`, `verified`, `can:viewAny,App\Models\Workshop` | `WorkshopPolicy::viewAny` → Spatie `workshops.view`; Inertia `app/dashboard/Index`, prop **`registrationSummary`** (`confirmed`, `waiting_list` counts for the current user). |
 | `GET /app/workshops`   | `app.workshops.index`   | `auth`, `verified`, `can:viewAny,App\Models\Workshop` | `WorkshopPolicy::viewAny` → Spatie `workshops.view`  |
 | `POST /app/workshops/{workshop}/registrations` | `app.workshops.registrations.attach` | `auth`, `verified`, `can:viewAny,App\Models\Workshop`, `can:attachRegistration,workshop` | `WorkshopPolicy::attachRegistration` → same as `view` |
 | `DELETE /app/workshops/{workshop}/registrations` | `app.workshops.registrations.detach` | `auth`, `verified`, `can:viewAny,App\Models\Workshop`, `can:detachRegistration,workshop` | `WorkshopPolicy::detachRegistration` → same as `view` |
 | `GET /admin/workshops` | `admin.workshops.index` | `auth`, `verified`, `can:create,App\Models\Workshop`  | `WorkshopPolicy::create` → Spatie `workshops.manage` |
+| `GET /admin/dashboard` | `admin.dashboard` | `auth`, `verified`, `can:create,App\Models\Workshop` | `create` → `workshops.manage`; Inertia `admin/dashboard/Index`, prop `statistics`; live updates via **Echo** private channel `admin.workshop-statistics` / event `statistics.updated`. |
 
 Additional **admin workshop management** routes (same `auth` + `verified` prefix; see `routes/web.php`):
 
