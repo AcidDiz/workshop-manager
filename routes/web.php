@@ -4,8 +4,10 @@ use App\Http\Controllers\Admin\Workshops\WorkshopCreateController;
 use App\Http\Controllers\Admin\Workshops\WorkshopDestroyController;
 use App\Http\Controllers\Admin\Workshops\WorkshopEditController;
 use App\Http\Controllers\Admin\Workshops\WorkshopIndexController as AdminWorkshopIndexController;
+use App\Http\Controllers\Admin\Workshops\WorkshopNextDayRemindDispatchController;
 use App\Http\Controllers\Admin\Workshops\WorkshopParticipantAttachController;
 use App\Http\Controllers\Admin\Workshops\WorkshopParticipantDetachController;
+use App\Http\Controllers\Admin\Workshops\WorkshopRemindDispatchController;
 use App\Http\Controllers\Admin\Workshops\WorkshopShowController;
 use App\Http\Controllers\Admin\Workshops\WorkshopStoreController;
 use App\Http\Controllers\Admin\Workshops\WorkshopUpdateController;
@@ -45,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('workshops', AdminWorkshopIndexController::class)->name('workshops.index');
                 Route::get('workshops/create', WorkshopCreateController::class)->name('workshops.create');
                 Route::post('workshops', WorkshopStoreController::class)->name('workshops.store');
+                Route::post('workshops/reminders/next-day', WorkshopNextDayRemindDispatchController::class)
+                    ->name('workshops.reminders.next-day');
             });
 
             Route::get('workshops/{workshop}', WorkshopShowController::class)
@@ -54,6 +58,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('workshops/{workshop}/participants', WorkshopParticipantAttachController::class)
                 ->middleware(['can:update,workshop'])
                 ->name('workshops.participants.attach');
+
+            Route::post('workshops/{workshop}/reminders', WorkshopRemindDispatchController::class)
+                ->middleware(['can:update,workshop'])
+                ->name('workshops.reminders.dispatch');
 
             Route::delete('workshops/{workshop}/participants', WorkshopParticipantDetachController::class)
                 ->middleware(['can:update,workshop'])
