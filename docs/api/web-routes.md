@@ -46,7 +46,7 @@ Same `auth` + `verified` stack; **`can:create,App\Models\Workshop`** (same gate 
 
 | Method | URI | Route name | Typical response |
 | ------ | --- | ---------- | ---------------- |
-| GET | `/admin/dashboard` | `admin.dashboard` | Inertia `admin/dashboard/Index` with prop `statistics` (aggregate workshop and registration counts, optional popular workshop, `generated_at`). Live updates use **Laravel Echo + Reverb** on private channel `admin.workshop-statistics` (event `statistics.updated`). |
+| GET | `/admin/dashboard` | `admin.dashboard` | Inertia `admin/dashboard/Index` with prop `statistics` (aggregate workshop and registration counts, optional next upcoming workshop, `generated_at`). Live updates use **Laravel Echo + Reverb** on private channel `admin.workshop-statistics` (event `statistics.updated`). |
 
 ### Broadcasting (Laravel Reverb / Echo)
 
