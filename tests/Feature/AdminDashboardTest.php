@@ -27,7 +27,7 @@ test('admins receive the dashboard page with statistics props', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    Workshop::factory()->upcoming()->create([
+    $workshop = Workshop::factory()->upcoming()->create([
         'created_by' => $admin->id,
     ]);
 
@@ -40,6 +40,7 @@ test('admins receive the dashboard page with statistics props', function () {
             ->where('statistics.workshops.total', 1)
             ->where('statistics.workshops.upcoming', 1)
             ->where('statistics.registrations.confirmed', 0)
+            ->where('statistics.next_upcoming_workshop.id', $workshop->id)
             ->has('statistics.generated_at'));
 });
 

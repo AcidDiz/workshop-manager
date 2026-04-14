@@ -16,6 +16,7 @@ test('admin sees the workshop overview dashboard without javascript errors', fun
 
     visit(route('admin.dashboard'))
         ->assertSee('Workshop overview')
+        ->assertSee('Next upcoming workshop')
         ->assertSee('Last updated:')
         ->assertNoJavaScriptErrors();
 });

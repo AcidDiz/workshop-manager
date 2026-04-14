@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
 import { computed, ref, watch } from "vue";
-import PopularWorkshopCard from "@/components/cards/PopularWorkshopCard.vue";
+import NextUpcomingWorkshopCard from "@/components/cards/NextUpcomingWorkshopCard.vue";
 import StatCard from "@/components/cards/StatCard.vue";
 import Heading from "@/components/Heading.vue";
 import { useEchoPrivateEvent } from "@/composables/useEchoPrivateEvent";
@@ -108,7 +108,7 @@ defineOptions({
     </div>
 
     <div class="max-w-md">
-      <PopularWorkshopCard :workshop="statistics.popular_workshop" />
+      <NextUpcomingWorkshopCard :workshop="statistics.next_upcoming_workshop" />
     </div>
   </div>
 </template>

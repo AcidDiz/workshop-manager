@@ -1,7 +1,10 @@
-export type AdminWorkshopPopular = {
+export type AdminNextUpcomingWorkshop = {
   id: number;
   title: string;
+  starts_at: string;
+  ends_at: string;
   confirmed_registrations_count: number;
+  capacity: number;
 };
 
 export type AdminWorkshopStatistics = {
@@ -15,6 +18,6 @@ export type AdminWorkshopStatistics = {
     waiting_list: number;
     total: number;
   };
-  popular_workshop: AdminWorkshopPopular | null;
+  next_upcoming_workshop: AdminNextUpcomingWorkshop | null;
   generated_at: string;
 };
