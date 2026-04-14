@@ -10,3 +10,9 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('admin.workshop-statistics', function ($user) {
     return $user->can('create', Workshop::class);
 });
+
+Broadcast::channel('admin.workshops.{workshopId}', function ($user, int $workshopId) {
+    $workshop = Workshop::query()->find($workshopId);
+
+    return $workshop !== null && $user->can('update', $workshop);
+});

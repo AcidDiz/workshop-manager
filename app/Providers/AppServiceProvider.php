@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Workshop;
 use App\Models\WorkshopRegistration;
+use App\Observers\BroadcastAdminWorkshopParticipantsObserver;
+use App\Observers\BroadcastUserWorkshopRegistrationStateObserver;
 use App\Observers\BroadcastWorkshopAdminStatisticsObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -36,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
 
         Workshop::observe(BroadcastWorkshopAdminStatisticsObserver::class);
         WorkshopRegistration::observe(BroadcastWorkshopAdminStatisticsObserver::class);
+        WorkshopRegistration::observe(BroadcastAdminWorkshopParticipantsObserver::class);
+        WorkshopRegistration::observe(BroadcastUserWorkshopRegistrationStateObserver::class);
     }
 
     /**
@@ -74,7 +78,7 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(MessageSending::class, function (MessageSending $event): void {
             $message = $event->message;
-            if (! $message instanceof Email) {
+            if (! ($message instanceof Email)) {
                 Log::debug('Mail outgoing (non-Email transport)', [
                     'class' => $message::class,
                 ]);
