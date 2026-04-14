@@ -15,7 +15,7 @@ class WorkshopStatisticsService
      * @return array{
      *     workshops: array{total: int, upcoming: int, closed: int},
      *     registrations: array{confirmed: int, waiting_list: int, total: int},
-     *     popular_workshop: null|array{id: int, title: string, confirmed_registrations_count: int},
+     *     next_upcoming_workshop: null|array{id: int, title: string, starts_at: string, ends_at: string, confirmed_registrations_count: int, capacity: int},
      *     generated_at: string
      * }
      */
@@ -43,18 +43,22 @@ class WorkshopStatisticsService
         $confirmedRegistrations = (int) ($confirmedRow?->cnt ?? 0);
         $waitingListRegistrations = (int) ($waitingRow?->cnt ?? 0);
 
-        $popularWorkshop = Workshop::query()
+        $nextUpcomingWorkshop = Workshop::query()
             ->withConfirmedRegistrationCount()
-            ->orderByDesc('confirmed_registrations_count')
+            ->where('starts_at', '>', $now)
+            ->orderBy('starts_at')
             ->orderBy('id')
             ->first();
 
-        $popularPayload = null;
-        if ($popularWorkshop !== null && $popularWorkshop->confirmed_registrations_count > 0) {
-            $popularPayload = [
-                'id' => $popularWorkshop->id,
-                'title' => $popularWorkshop->title,
-                'confirmed_registrations_count' => (int) $popularWorkshop->confirmed_registrations_count,
+        $nextUpcomingPayload = null;
+        if ($nextUpcomingWorkshop !== null) {
+            $nextUpcomingPayload = [
+                'id' => $nextUpcomingWorkshop->id,
+                'title' => $nextUpcomingWorkshop->title,
+                'starts_at' => $nextUpcomingWorkshop->starts_at->toIso8601String(),
+                'ends_at' => $nextUpcomingWorkshop->ends_at->toIso8601String(),
+                'confirmed_registrations_count' => (int) $nextUpcomingWorkshop->confirmed_registrations_count,
+                'capacity' => (int) $nextUpcomingWorkshop->capacity,
             ];
         }
 
@@ -69,7 +73,7 @@ class WorkshopStatisticsService
                 'waiting_list' => $waitingListRegistrations,
                 'total' => $confirmedRegistrations + $waitingListRegistrations,
             ],
-            'popular_workshop' => $popularPayload,
+            'next_upcoming_workshop' => $nextUpcomingPayload,
             'generated_at' => $now->toIso8601String(),
         ];
     }
