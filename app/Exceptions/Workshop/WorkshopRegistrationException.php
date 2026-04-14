@@ -30,4 +30,11 @@ class WorkshopRegistrationException extends DomainException
     {
         return new self(__('This user already has another registration overlapping this workshop time.'));
     }
+
+    public static function workshopFullForAdminAttach(): self
+    {
+        return new self(__(
+            'This workshop is at capacity. Remove a participant or increase capacity before adding another.'
+        ));
+    }
 }

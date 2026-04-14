@@ -58,8 +58,11 @@ class WorkshopShowController extends Controller
             ->values()
             ->all();
 
+        $confirmedCount = (int) ($workshop->confirmed_registrations_count ?? 0);
+
         return Inertia::render('admin/workshops/Show', [
             'workshop' => WorkshopShowResource::make($workshop)->resolve($request),
+            'canAttachParticipants' => $confirmedCount < (int) $workshop->capacity,
             'participantList' => $participantList,
             'assignableUsers' => $assignableUsers,
             'participantTableColumns' => WorkshopRegistrationTableColumns::adminShowTable(),

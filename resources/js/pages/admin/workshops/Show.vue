@@ -17,6 +17,7 @@ type AssignableUser = { id: number; name: string; email: string };
 
 const props = defineProps<{
   workshop: WorkshopShowPayload;
+  canAttachParticipants: boolean;
   participantList: Record<string, unknown>[];
   assignableUsers: AssignableUser[];
   participantTableColumns: TableColumn[];
@@ -169,11 +170,18 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
       >
         <h2 class="text-lg font-semibold">Add participant</h2>
         <p class="text-sm text-muted-foreground">
-          Register an employee who is not already on this workshop. Capacity and
-          waiting-list rules still apply; overlapping sessions for that user are blocked.
+          Register an employee who is not already on this workshop. There must be a free confirmed
+          seat; overlapping sessions for that user are blocked.
+        </p>
+        <p
+          v-if="!canAttachParticipants"
+          class="text-sm text-muted-foreground"
+        >
+          This workshop is at capacity. Increase capacity in the edit form or remove a participant
+          before adding someone else.
         </p>
         <Form
-          v-if="assignableUsers.length > 0"
+          v-else-if="assignableUsers.length > 0"
           v-bind="adminWorkshops.participants.attach.form(workshop.id)"
           class="flex flex-col gap-3 sm:flex-row sm:items-end"
           v-slot="{ processing, errors }"

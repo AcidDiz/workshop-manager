@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests\Workshops;
 
+use App\Enums\Workshop\WorkshopRegistrationStatusEnum;
 use App\Models\Workshop;
+use App\Models\WorkshopRegistration;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class UpdateWorkshopRequest extends FormRequest
 {
@@ -35,5 +38,29 @@ class UpdateWorkshopRequest extends FormRequest
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            /** @var Workshop $workshop */
+            $workshop = $this->route('workshop');
+            $capacity = (int) $this->input('capacity');
+            $confirmed = WorkshopRegistration::query()
+                ->where('workshop_id', $workshop->id)
+                ->where('status', WorkshopRegistrationStatusEnum::Confirmed)
+                ->count();
+
+            if ($capacity < $confirmed) {
+                $validator->errors()->add(
+                    'capacity',
+                    __('Capacity cannot be lower than the number of confirmed participants (:count).', ['count' => $confirmed])
+                );
+            }
+        });
     }
 }

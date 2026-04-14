@@ -18,8 +18,9 @@ class WorkshopRegistrationService
     }
 
     /**
-     * Admin-managed enrolment: any employee can be added even when the workshop is no longer “open”
-     * for self-service; still enforces duplicate and schedule-overlap rules for the subject user.
+     * Admin-managed enrolment: any employee can be added when there is a free confirmed seat, even
+     * when the workshop is no longer “open” for self-service; still enforces duplicate and
+     * schedule-overlap rules for the subject user. Does not add waiting-list rows.
      */
     public function attachAsAdmin(User $subject, Workshop $workshop): WorkshopRegistration
     {
@@ -53,6 +54,10 @@ class WorkshopRegistrationService
                 ->where('workshop_id', $workshop->id)
                 ->where('status', WorkshopRegistrationStatusEnum::Confirmed)
                 ->count();
+
+            if (! $selfService && $confirmedCount >= $workshop->capacity) {
+                throw WorkshopRegistrationException::workshopFullForAdminAttach();
+            }
 
             $status = $confirmedCount < $workshop->capacity
                 ? WorkshopRegistrationStatusEnum::Confirmed

@@ -101,6 +101,39 @@ test('store rejects non positive capacity', function () {
         ->assertSessionHasErrors('capacity');
 });
 
+test('admin cannot set capacity below confirmed participant count', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $workshop = Workshop::factory()->upcoming()->create([
+        'created_by' => $admin->id,
+        'capacity' => 10,
+    ]);
+
+    WorkshopRegistration::factory()->confirmed()->count(4)->create([
+        'workshop_id' => $workshop->id,
+    ]);
+
+    $starts = $workshop->starts_at->copy()->addDay();
+    $ends = $workshop->ends_at->copy()->addDay();
+
+    $this->actingAs($admin)
+        ->from(route('admin.workshops.edit', $workshop))
+        ->put(route('admin.workshops.update', $workshop), [
+            'title' => $workshop->title,
+            'description' => $workshop->description,
+            'workshop_category_id' => null,
+            'starts_at' => $starts->timezone(config('app.timezone'))->format('Y-m-d\TH:i'),
+            'ends_at' => $ends->timezone(config('app.timezone'))->format('Y-m-d\TH:i'),
+            'capacity' => 3,
+        ])
+        ->assertRedirect(route('admin.workshops.edit', $workshop))
+        ->assertSessionHasErrors('capacity');
+
+    $workshop->refresh();
+    expect($workshop->capacity)->toBe(10);
+});
+
 test('admin can update a workshop', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
@@ -285,7 +318,7 @@ test('admin attach participant rejects unknown user_id', function () {
         ->assertSessionHasErrors('user_id');
 });
 
-test('admin attach adds employee to waiting list when workshop is full', function () {
+test('admin attach is rejected when the workshop has no free confirmed seats', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
@@ -305,18 +338,16 @@ test('admin attach adds employee to waiting list when workshop is full', functio
     ]);
 
     $this->actingAs($admin)
+        ->from(route('admin.workshops.show', $workshop))
         ->post(route('admin.workshops.participants.attach', $workshop), [
             'user_id' => $secondEmployee->id,
         ])
-        ->assertRedirect();
+        ->assertRedirect(route('admin.workshops.show', $workshop));
 
-    $registration = WorkshopRegistration::query()
+    expect(WorkshopRegistration::query()
         ->where('workshop_id', $workshop->id)
         ->where('user_id', $secondEmployee->id)
-        ->first();
-
-    expect($registration)->not->toBeNull()
-        ->and($registration->status->value)->toBe('waiting_list');
+        ->exists())->toBeFalse();
 });
 
 test('admin can attach and detach a workshop participant', function () {

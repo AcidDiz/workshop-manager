@@ -165,6 +165,28 @@ test('attachAsAdmin allows registration when the workshop is in the past', funct
     expect($registration->status)->toBe(WorkshopRegistrationStatusEnum::Confirmed);
 });
 
+test('attachAsAdmin fails when there are no free confirmed seats', function () {
+    $admin = User::factory()->create();
+    $employee = User::factory()->create();
+
+    $workshop = Workshop::factory()->upcoming()->create([
+        'capacity' => 1,
+        'created_by' => $admin->id,
+    ]);
+
+    WorkshopRegistration::factory()->confirmed()->create([
+        'workshop_id' => $workshop->id,
+        'user_id' => User::factory()->create()->id,
+    ]);
+
+    $service = app(WorkshopRegistrationService::class);
+    expect(fn () => $service->attachAsAdmin($employee, $workshop))
+        ->toThrow(
+            WorkshopRegistrationException::class,
+            'This workshop is at capacity. Remove a participant or increase capacity before adding another.'
+        );
+});
+
 test('attachAsAdmin fails when the subject is already registered', function () {
     $admin = User::factory()->create();
     $employee = User::factory()->create();
