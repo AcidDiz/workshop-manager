@@ -25,33 +25,32 @@ Main guide to install and run the project.
 - Session driver default: `database`
 - Cache store default: `database`
 - Mailer default: `log`
-- Recommended cross-platform environment: Laravel Sail with MySQL and Redis
+- Recommended cross-platform environment: Laravel Sail with MySQL, Redis, and Reverb
 
 ## Local requirements
 
-You need at least:
-
-- PHP 8.3+
-- Composer 2.x
-- Node.js 20+ with npm
-- MySQL (via Sail or a local install) for application development
-- Typical Laravel PHP extensions, including PDO MySQL, **pdo_sqlite** (needed for `php artisan test` on the host if you run tests outside Docker), mbstring, openssl, and tokenizer
-
-For Laravel Sail, also:
+This project is documented and supported primarily through Laravel Sail. You need at least:
 
 - Docker
 - Docker Compose
+- PHP 8.3+
+- Composer 2.x
+
+Bootstrap note:
+
+- PHP + Composer are still needed on the host for the initial `composer install`, because the Sail wrapper lives in `vendor/bin/sail`.
 
 This project’s Sail setup includes:
 
 - MySQL
 - Redis
+- Reverb
 
 Practical notes:
 
-- Prefer Sail with MySQL and Redis as the main development environment.
-- The test suite defaults to SQLite in-memory (see `phpunit.xml`), independent of your dev database.
-- To run tests against MySQL (e.g. engine-specific checks), set `DB_CONNECTION=mysql` and the `DB_*` variables before `php artisan test`.
+- Prefer Sail as the default environment for app runtime, queues, realtime, and tests.
+- Frontend dependencies can be installed inside the application container with `./vendor/bin/sail npm install`.
+- The default PHP test suite still uses SQLite in-memory (see `phpunit.xml`), but it should be run from the Sail container.
 
 ## Step-by-step installation
 
@@ -61,27 +60,19 @@ Practical notes:
 cd workshop-manager
 ```
 
-### 2. Install backend dependencies
+### 2. Install backend dependencies on the host
 
 ```bash
 composer install
 ```
 
-### 3. Install frontend dependencies
-
-```bash
-npm install
-```
-
-### 4. Create the environment file
+### 3. Create the environment file
 
 ```bash
 cp .env.example .env
 ```
 
-### 5. Choose how you run the app
-
-#### Recommended: Laravel Sail
+### 4. Start Laravel Sail
 
 Laravel Sail works well when you want a consistent environment on macOS, Linux, and Windows without heavy local configuration.
 
@@ -89,6 +80,7 @@ This project uses Sail with:
 
 - MySQL
 - Redis
+- Reverb
 
 The repo already includes `compose.yaml` with the required services.
 
@@ -104,44 +96,28 @@ Or use the Sail script:
 ./vendor/bin/sail up -d
 ```
 
-Run migrations inside the container:
+### 5. Generate the application key inside Sail
+
+```bash
+./vendor/bin/sail artisan key:generate
+```
+
+### 6. Install frontend dependencies inside Sail
+
+```bash
+./vendor/bin/sail npm install
+```
+
+### 7. Run migrations inside Sail
 
 ```bash
 ./vendor/bin/sail artisan migrate
 ```
 
-Optional demo or other seeds:
+Optional demo data:
 
 ```bash
 ./vendor/bin/sail artisan db:seed
-```
-
-#### Local option: MySQL without Docker
-
-If you do not use Sail, configure MySQL in `.env`, for example:
-
-```dotenv
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=workshop_manager
-DB_USERNAME=...
-DB_PASSWORD=...
-SESSION_DRIVER=database
-QUEUE_CONNECTION=database
-CACHE_STORE=database
-```
-
-### 6. Generate the application key
-
-```bash
-php artisan key:generate
-```
-
-### 7. Run migrations
-
-```bash
-php artisan migrate
 ```
 
 ### 8. Build assets or start the dev server
@@ -149,45 +125,43 @@ php artisan migrate
 One-off production build:
 
 ```bash
-npm run build
+./vendor/bin/sail npm run build
 ```
 
 Interactive development:
 
 ```bash
-composer run dev
+./vendor/bin/sail npm run dev
 ```
 
 ## Running in development
 
-Recommended local workflow:
-
-```bash
-composer run dev
-```
-
-This starts:
-
-- Laravel server
-- Queue worker
-- Laravel Pail (logs)
-- Vite dev server
-
-With Sail, a practical equivalent is:
+Recommended Sail workflow:
 
 ```bash
 ./vendor/bin/sail up -d
+./vendor/bin/sail npm run dev
+```
+
+This gives you:
+
+- App container (`laravel.test`)
+- MySQL
+- Redis
+- Reverb
+- Vite dev server (via `sail npm run dev`)
+
+Run supporting long-lived Laravel processes in separate terminals:
+
+```bash
 ./vendor/bin/sail artisan queue:listen --tries=1 --timeout=0
 ./vendor/bin/sail artisan pail --timeout=0
 ```
 
-To run processes separately:
+If you prefer a production-like frontend build instead of Vite HMR:
 
 ```bash
-php artisan serve
-npm run dev
-php artisan queue:listen --tries=1 --timeout=0
-php artisan pail --timeout=0
+./vendor/bin/sail npm run build
 ```
 
 ### Dashboards
@@ -238,27 +212,10 @@ After editing `.env`:
 
 ```bash
 ./vendor/bin/sail artisan optimize:clear
-npm run build
+./vendor/bin/sail npm run build
 ```
 
-(or `npm run dev` during development so `VITE_*` are picked up)
-
-#### `.env` without Docker (e.g. `composer run dev`)
-
-When PHP and Reverb both run on the host, **`REVERB_*` and `VITE_REVERB_*` can match** (same host and port), for example:
-
-```dotenv
-BROADCAST_CONNECTION=reverb
-REVERB_HOST=127.0.0.1
-REVERB_PORT=8081
-REVERB_SCHEME=http
-VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
-VITE_REVERB_HOST=127.0.0.1
-VITE_REVERB_PORT=8081
-VITE_REVERB_SCHEME=http
-```
-
-`composer run dev` starts Reverb on **`127.0.0.1:8081`** in this project’s script; align `REVERB_PORT` / `VITE_REVERB_PORT` with that.
+(or `./vendor/bin/sail npm run dev` during development so `VITE_*` are picked up)
 
 #### Troubleshooting
 
@@ -288,25 +245,19 @@ Manual runs (e.g. with Sail): `./vendor/bin/sail artisan workshops:remind`. Ensu
 
 ### Application tests
 
-Tests default to SQLite in-memory (`phpunit.xml`). To run Pest/PHPUnit without Pint first:
-
-```bash
-composer run test:php -- --compact
-```
-
-Or:
-
-```bash
-php artisan test --compact
-```
-
-With Sail (same SQLite-in-memory default):
+Run the PHP test suite inside Sail:
 
 ```bash
 ./vendor/bin/sail artisan test --compact
 ```
 
-To force tests against Sail’s MySQL (variables as already set in the container):
+If you want the Composer wrapper instead:
+
+```bash
+./vendor/bin/sail composer run test:php -- --compact
+```
+
+Tests default to SQLite in-memory (`phpunit.xml`) even when launched from Sail. To force tests against Sail’s MySQL:
 
 ```bash
 DB_CONNECTION=mysql DB_HOST=mysql DB_DATABASE=testing ./vendor/bin/sail artisan test --compact
@@ -317,14 +268,6 @@ DB_CONNECTION=mysql DB_HOST=mysql DB_DATABASE=testing ./vendor/bin/sail artisan 
 Tests under `tests/Browser` are not part of the default `php artisan test` run (only `Unit` and `Feature` in `phpunit.xml`). Run them with:
 
 ```bash
-npm install
-npx playwright install
-composer run test:browser -- --compact
-```
-
-With Sail, from the application root:
-
-```bash
 ./vendor/bin/sail npm install
 ./vendor/bin/sail npx playwright install
 ./vendor/bin/sail composer run test:browser -- --compact
@@ -333,16 +276,16 @@ With Sail, from the application root:
 ### Frontend checks
 
 ```bash
-npm run lint:check
-npm run format:check
-npm run types:check
+./vendor/bin/sail npm run lint:check
+./vendor/bin/sail npm run format:check
+./vendor/bin/sail npm run types:check
 ```
 
 ### Full check
 
 ```bash
-composer run test
-composer run ci:check
+./vendor/bin/sail composer run test
+./vendor/bin/sail composer run ci:check
 ```
 
 ## Quick troubleshooting
@@ -352,13 +295,13 @@ composer run ci:check
 Run:
 
 ```bash
-npm run build
+./vendor/bin/sail npm run build
 ```
 
 Or, in development:
 
 ```bash
-npm run dev
+./vendor/bin/sail npm run dev
 ```
 
 ### Login or protected pages fail after setup
@@ -384,6 +327,6 @@ For log-only delivery (no SMTP), use `MAIL_MAILER=log` and `MAIL_LOG_OUTGOING=fa
 
 With `CACHE_STORE=database` and `SESSION_DRIVER=database`, run migrations successfully before using the app.
 
-### Tests: `could not find driver` with SQLite
+### Tests fail because of missing PHP extensions on the host
 
-The suite sets `DB_CONNECTION=sqlite` in `phpunit.xml`. On host PHP, install the SQLite extension (e.g. on Debian/Ubuntu `php8.3-sqlite3`), or run tests inside the Sail container, which already includes the drivers.
+Use Sail for test execution. The documented path for this project is `./vendor/bin/sail artisan test --compact`, so host PHP extensions such as `pdo_sqlite` are not part of the normal setup flow.
