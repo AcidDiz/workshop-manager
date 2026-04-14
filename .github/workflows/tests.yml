@@ -17,40 +17,37 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup PHP
+      - name: Setup PHP for Composer bootstrap
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.5'
           tools: composer:v2
-          coverage: xdebug
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
+      - name: Prepare application bootstrap
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          cp .env.example .env
 
-      - name: Install Node Dependencies
-        run: npm i
+      - name: Start Sail services
+        run: ./vendor/bin/sail up -d
 
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Install frontend dependencies in Sail
+        run: ./vendor/bin/sail npm ci
 
-      - name: Copy Environment File
-        run: cp .env.example .env
+      - name: Generate application key in Sail
+        run: ./vendor/bin/sail artisan key:generate
 
-      - name: Generate Application Key
-        run: php artisan key:generate
+      - name: Build assets in Sail
+        run: ./vendor/bin/sail npm run build
 
-      - name: Build Assets
-        run: npm run build
+      - name: Run test suite in Sail
+        run: ./vendor/bin/sail artisan test --compact
 
-      - name: Tests
-        run: ./vendor/bin/pest
+      - name: Stop Sail services
+        if: always()
+        run: ./vendor/bin/sail down -v
