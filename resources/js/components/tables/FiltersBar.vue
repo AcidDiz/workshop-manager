@@ -44,9 +44,11 @@ function buildQuery(): Record<string, string> {
 
     const rawSort = props.filters.sort;
     const rawDirection = props.filters.direction;
+
     if (rawSort !== null && rawSort !== undefined && rawSort !== '') {
         query.sort = String(rawSort);
     }
+
     if (rawDirection !== null && rawDirection !== undefined && rawDirection !== '') {
         query.direction = String(rawDirection);
     }

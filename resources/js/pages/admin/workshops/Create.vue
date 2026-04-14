@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import Heading from '@/components/Heading.vue';
 import WorkshopForm from '@/components/forms/WorkshopForm.vue';
+import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import adminWorkshops from '@/routes/admin/workshops';
 import type { WorkshopCategoryOption } from '@/types/models';

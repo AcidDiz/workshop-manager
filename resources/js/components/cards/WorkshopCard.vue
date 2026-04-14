@@ -12,8 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { WorkshopListItem } from "@/types/models";
 import appWorkshopRegistrations from "@/routes/app/workshops/registrations";
+import type { WorkshopListItem } from "@/types/models";
 
 const props = defineProps<{
   workshop: WorkshopListItem;

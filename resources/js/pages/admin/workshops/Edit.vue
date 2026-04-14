@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Form, Head, Link, setLayoutProps } from '@inertiajs/vue3';
 import { watchEffect } from 'vue';
-import Heading from '@/components/Heading.vue';
 import WorkshopForm from '@/components/forms/WorkshopForm.vue';
+import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import adminWorkshops from '@/routes/admin/workshops';
 import type {

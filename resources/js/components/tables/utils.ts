@@ -35,6 +35,7 @@ export function formatTableCellValue(value: unknown, column: TableColumn): strin
 
     if (column.cast_type.startsWith('datetime')) {
         const date = new Date(String(value));
+
         if (Number.isNaN(date.getTime())) {
             return String(value);
         }
