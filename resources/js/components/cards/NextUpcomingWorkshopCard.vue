@@ -4,8 +4,8 @@ import { CalendarRange, Mail, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
-import type { AdminNextUpcomingWorkshop } from '@/types/dashboard';
 import adminWorkshops from '@/routes/admin/workshops';
+import type { AdminNextUpcomingWorkshop } from '@/types/dashboard';
 
 const props = defineProps<{
     workshop: AdminNextUpcomingWorkshop | null;

@@ -3,10 +3,10 @@ import { usePage } from '@inertiajs/vue3';
 import { GraduationCap, LayoutGrid } from 'lucide-vue-next';
 import { computed } from 'vue';
 import ShellInsetSidebar from '@/components/layout/ShellInsetSidebar.vue';
-import type { NavItem } from '@/types';
 import { dashboard } from '@/routes';
 import app from '@/routes/app';
 import appWorkshops from '@/routes/app/workshops';
+import type { NavItem } from '@/types';
 
 const page = usePage();
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { GraduationCap, LayoutGrid } from 'lucide-vue-next';
 import ShellTopHeader from '@/components/layout/ShellTopHeader.vue';
-import type { BreadcrumbItem, NavItem } from '@/types';
 import admin from '@/routes/admin';
 import adminWorkshops from '@/routes/admin/workshops';
+import type { BreadcrumbItem, NavItem } from '@/types';
 
 const props = withDefaults(
     defineProps<{

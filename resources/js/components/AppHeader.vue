@@ -3,10 +3,10 @@ import { usePage } from '@inertiajs/vue3';
 import { GraduationCap, LayoutGrid } from 'lucide-vue-next';
 import { computed } from 'vue';
 import ShellTopHeader from '@/components/layout/ShellTopHeader.vue';
-import type { BreadcrumbItem, NavItem } from '@/types';
 import { dashboard } from '@/routes';
 import app from '@/routes/app';
 import appWorkshops from '@/routes/app/workshops';
+import type { BreadcrumbItem, NavItem } from '@/types';
 
 const props = withDefaults(
     defineProps<{
