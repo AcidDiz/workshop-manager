@@ -1,7 +1,11 @@
 import { usePage } from '@inertiajs/vue3';
 import { toValue, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
-import { getEchoClient, releaseEchoClient, retainEchoClient } from '@/lib/realtime/echo';
+import {
+    getEchoClient,
+    releaseEchoClient,
+    retainEchoClient,
+} from '@/lib/realtime/echo';
 
 type EchoEventHandler<TPayload> = (payload: TPayload) => void;
 

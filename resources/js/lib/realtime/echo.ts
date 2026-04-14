@@ -19,7 +19,9 @@ function resolveEchoConfig(csrfToken: string) {
 
     const scheme = import.meta.env.VITE_REVERB_SCHEME ?? 'https';
     const forceTls = scheme === 'https';
-    const port = Number(import.meta.env.VITE_REVERB_PORT ?? (forceTls ? '443' : '80'));
+    const port = Number(
+        import.meta.env.VITE_REVERB_PORT ?? (forceTls ? '443' : '80'),
+    );
 
     return {
         key,
@@ -30,7 +32,9 @@ function resolveEchoConfig(csrfToken: string) {
     };
 }
 
-function createEchoClient({ csrfToken }: EchoAuthOptions): Echo<'reverb'> | null {
+function createEchoClient({
+    csrfToken,
+}: EchoAuthOptions): Echo<'reverb'> | null {
     const config = resolveEchoConfig(csrfToken);
 
     if (!config) {

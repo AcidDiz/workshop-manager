@@ -35,7 +35,9 @@ watchEffect(() => {
     <Head :title="`Edit — ${workshop.title}`" />
 
     <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div
+            class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
             <Heading
                 title="Edit workshop"
                 :description="`Update “${workshop.title}”. Past sessions can still be edited (e.g. corrections).`"

@@ -8,9 +8,7 @@ use Illuminate\Notifications\Notification;
 
 class WorkshopReminderNotification extends Notification
 {
-    public function __construct(
-        public Workshop $workshop,
-    ) {}
+    public function __construct(public Workshop $workshop) {}
 
     /**
      * @return list<string>
@@ -26,10 +24,10 @@ class WorkshopReminderNotification extends Notification
         $startsLocal = $this->workshop->starts_at->copy()->timezone($tz)->format('l j F Y, H:i');
 
         return (new MailMessage)
-            ->subject('Workshop reminder: ' . $this->workshop->title)
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line('This is a reminder that you are registered for **' . $this->workshop->title . '**, which takes place on:')
-            ->line('**' . $startsLocal . ' (' . $tz . ')**')
-            ->line('Thank you for using ' . config('app.name') . '.');
+            ->subject("Workshop reminder: {$this->workshop->title}")
+            ->greeting("Hello {$notifiable->name},")
+            ->line("This is a reminder that you are registered for **{$this->workshop->title}**, which takes place on:")
+            ->line("**{$startsLocal} ({$tz})**")
+            ->line('Thank you for using '.config('app.name').'.');
     }
 }

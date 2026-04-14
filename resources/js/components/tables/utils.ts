@@ -10,21 +10,30 @@ export function getNestedValue(
     row: Record<string, unknown>,
     fieldName: string,
 ): unknown {
-    return fieldName.split('.').reduce((value: unknown, key: string): unknown => {
-        if (value === null || value === undefined || typeof value !== 'object') {
-            return null;
-        }
+    return fieldName
+        .split('.')
+        .reduce((value: unknown, key: string): unknown => {
+            if (
+                value === null ||
+                value === undefined ||
+                typeof value !== 'object'
+            ) {
+                return null;
+            }
 
-        const record = value as Record<string, unknown>;
-        const bySameKey = record[key];
-        const bySnake = record[toSnakeCase(key)];
-        const byCamel = record[toCamelCase(key)];
+            const record = value as Record<string, unknown>;
+            const bySameKey = record[key];
+            const bySnake = record[toSnakeCase(key)];
+            const byCamel = record[toCamelCase(key)];
 
-        return bySameKey ?? bySnake ?? byCamel ?? null;
-    }, row);
+            return bySameKey ?? bySnake ?? byCamel ?? null;
+        }, row);
 }
 
-export function formatTableCellValue(value: unknown, column: TableColumn): string {
+export function formatTableCellValue(
+    value: unknown,
+    column: TableColumn,
+): string {
     if (value === null || value === undefined || value === '') {
         return '—';
     }

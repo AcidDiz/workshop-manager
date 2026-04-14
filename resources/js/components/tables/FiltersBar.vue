@@ -26,8 +26,7 @@ function syncFromProps(): void {
     for (const field of props.fields) {
         const key = paramKey(field);
         const raw = props.filters[key];
-        local[key] =
-            raw === null || raw === undefined ? '' : String(raw);
+        local[key] = raw === null || raw === undefined ? '' : String(raw);
     }
 }
 
@@ -49,7 +48,11 @@ function buildQuery(): Record<string, string> {
         query.sort = String(rawSort);
     }
 
-    if (rawDirection !== null && rawDirection !== undefined && rawDirection !== '') {
+    if (
+        rawDirection !== null &&
+        rawDirection !== undefined &&
+        rawDirection !== ''
+    ) {
         query.direction = String(rawDirection);
     }
 
@@ -63,11 +66,15 @@ function buildQuery(): Record<string, string> {
 }
 
 function apply(): void {
-    router.get(props.indexUrl(buildQuery()), {}, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-    });
+    router.get(
+        props.indexUrl(buildQuery()),
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
 }
 
 function reset(): void {
@@ -84,11 +91,7 @@ function reset(): void {
         class="grid gap-4 border border-sidebar-border/60 bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-sidebar-border"
         @submit.prevent="apply"
     >
-        <div
-            v-for="field in fields"
-            :key="paramKey(field)"
-            class="space-y-1.5"
-        >
+        <div v-for="field in fields" :key="paramKey(field)" class="space-y-1.5">
             <Label :for="`filters-${paramKey(field)}`">{{ field.label }}</Label>
 
             <Input
