@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Workshops;
 
 use App\Http\Controllers\Controller;
 use App\Models\Workshop;
-use App\Support\Tables\WorkshopRegistrationTableColumns;
+use App\Models\Support\Tables\Workshop\WorkshopRegistrationTableColumns;
 use App\Support\Workshop\AdminWorkshopShowState;
 use Inertia\Inertia;
 use Inertia\Response;

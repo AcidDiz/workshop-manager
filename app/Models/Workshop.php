@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Enums\Workshop\WorkshopRegistrationStatusEnum;
-use App\Models\Scopes\Workshop\WorkshopFilterScopes;
-use App\Models\Scopes\Workshop\WorkshopSortScopes;
+use App\Models\Support\Scopes\Workshop\WorkshopFilterScopes;
+use App\Models\Support\Scopes\Workshop\WorkshopSortScopes;
 use Database\Factories\WorkshopFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;

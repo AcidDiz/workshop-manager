@@ -325,9 +325,9 @@ Accept: text/html
 | `app/Http/Requests/Workshops/ListWorkshopsIndexRequest.php`                        | Authorization + query validation.            |
 | `app/Http/Requests/Workshops/StoreWorkshopRequest.php`                             | Admin create validation.                     |
 | `app/Http/Requests/Workshops/UpdateWorkshopRequest.php`                            | Admin update validation.                     |
-| `app/Support/Filters/Workshops/WorkshopUserFilters.php`                            | Non-admin index query + `cardFilterFields`.  |
-| `app/Support/Filters/Workshops/WorkshopAdminFilters.php`                           | Admin index query + `workshopTableColumns`.  |
+| `app/Models/Support/Filters/Workshops/WorkshopUserFilters.php`                            | Non-admin index query + `cardFilterFields`.  |
+| `app/Models/Support/Filters/Workshops/WorkshopAdminFilters.php`                           | Admin index query + `workshopTableColumns`.  |
 | `app/Http/Resources/Workshop/WorkshopListItemResource.php`                         | `workshopList` row shape.                    |
 | `app/Http/Resources/Workshop/WorkshopShowResource.php`                             | Admin show `workshop` prop.                  |
 | `app/Http/Resources/Workshop/WorkshopParticipantRowResource.php`                   | Admin show `participantList` rows.           |
-| `app/Support/Tables/WorkshopRegistrationTableColumns.php`                          | Admin show participant table columns.        |
+| `app/Models/Support/Tables/Workshop/WorkshopRegistrationTableColumns.php`                          | Admin show participant table columns.        |

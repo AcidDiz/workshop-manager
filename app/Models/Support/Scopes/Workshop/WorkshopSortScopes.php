@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Scopes\Workshop;
+namespace App\Models\Support\Scopes\Workshop;
 
 use App\Models\User;
 use App\Models\WorkshopCategory;

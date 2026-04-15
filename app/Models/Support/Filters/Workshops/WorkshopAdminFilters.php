@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Support\Filters\Workshops;
+namespace App\Models\Support\Filters\Workshops;
 
 use App\Enums\Workshop\WorkshopStatusEnum;
+use App\Models\Support\Tables\Workshop\WorkshopTableColumns;
 use App\Models\User;
 use App\Models\Workshop;
 use App\Models\WorkshopCategory;
-use App\Support\Tables\WorkshopTableColumns;
 use Illuminate\Support\Collection;
 
 /**

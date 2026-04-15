@@ -7,7 +7,7 @@ use App\Http\Requests\Workshops\ListWorkshopsIndexRequest;
 use App\Http\Resources\Workshop\WorkshopListItemResource;
 use App\Models\Workshop;
 use App\Models\WorkshopRegistration;
-use App\Support\Filters\Workshops\WorkshopUserFilters;
+use App\Models\Support\Filters\Workshops\WorkshopUserFilters;
 use App\Support\Workshop\WorkshopWaitingListPositions;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;

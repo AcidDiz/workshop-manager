@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin\Workshops;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workshops\ListWorkshopsIndexRequest;
 use App\Http\Resources\Workshop\WorkshopListItemResource;
-use App\Support\Filters\Workshops\WorkshopAdminFilters;
+use App\Models\Support\Filters\Workshops\WorkshopAdminFilters;
 use Inertia\Inertia;
 use Inertia\Response;
 

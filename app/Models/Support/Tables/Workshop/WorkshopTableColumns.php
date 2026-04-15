@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Tables;
+namespace App\Models\Support\Tables\Workshop;
 
 use App\Enums\Workshop\WorkshopStatusEnum;
 use App\Http\Resources\User\FilterSelectOptionResource as UserFilterSelectOptionResource;

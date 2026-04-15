@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Tables;
+namespace App\Models\Support\Tables\Workshop;
 
 /**
  * Column metadata for admin workshop detail: registered users (confirmed and waiting list).

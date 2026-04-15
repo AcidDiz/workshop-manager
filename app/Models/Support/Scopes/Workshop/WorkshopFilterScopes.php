@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Scopes\Workshop;
+namespace App\Models\Support\Scopes\Workshop;
 
 use App\Enums\Workshop\WorkshopStatusEnum;
 use Illuminate\Database\Eloquent\Builder;

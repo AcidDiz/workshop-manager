@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Filters\Workshops;
+namespace App\Models\Support\Filters\Workshops;
 
 use App\Enums\Workshop\WorkshopStatusEnum;
 use App\Http\Resources\WorkshopCategory\WorkshopCategoryFilterSelectOptionResource;
