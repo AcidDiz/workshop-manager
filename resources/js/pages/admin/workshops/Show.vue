@@ -28,9 +28,7 @@ const props = defineProps<{
 const workshopState = ref<WorkshopShowPayload>({ ...props.workshop });
 const canAttachParticipantsState = ref(props.canAttachParticipants);
 const participantListState = ref<Record<string, unknown>[]>(
-    props.participantList.map(
-        (row) => ({ ...row }) as Record<string, unknown>,
-    ),
+    props.participantList.map((row) => ({ ...row }) as Record<string, unknown>),
 );
 const assignableUsersState = ref<AssignableUser[]>([...props.assignableUsers]);
 
@@ -258,7 +256,9 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
                 <Form
                     v-else-if="assignableUsersState.length > 0"
                     v-bind="
-                        adminWorkshops.participants.attach.form(workshopState.id)
+                        adminWorkshops.participants.attach.form(
+                            workshopState.id,
+                        )
                     "
                     class="flex flex-col gap-3 sm:flex-row sm:items-end"
                     v-slot="{ processing, errors }"
@@ -334,9 +334,9 @@ const workshopSummaryItems = computed((): DescriptionListItem[] => {
 
         <ConfirmDialog
             v-model:open="removeOpen"
-                :form-attributes="
-                    adminWorkshops.participants.detach.form(workshopState.id)
-                "
+            :form-attributes="
+                adminWorkshops.participants.detach.form(workshopState.id)
+            "
             title="Remove participant"
             :description="`Remove ${removeUserLabel} from this workshop? Confirmed seats may promote someone from the waiting list.`"
             confirm-label="Remove"
